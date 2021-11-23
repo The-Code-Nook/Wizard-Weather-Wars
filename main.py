@@ -125,13 +125,13 @@ class Weapon:
     def face_left(self):
         self.attacking_frame = 0
         self.canvas.delete(self.id)
-        self.id = self.canvas.create_image((100,100), image=self.file_rotate)
+        self.id = self.canvas.create_image((0,0), image=self.file_rotate)
         self.attacking = False
 
     def face_right(self):
         self.attacking_frame = 0
         self.canvas.delete(self.id)
-        self.id = self.canvas.create_image((100,100), image=self.file)
+        self.id = self.canvas.create_image((0,0), image=self.file)
         self.attacking = False
 
     def attack(self, button):
