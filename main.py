@@ -68,8 +68,8 @@ class HealthBar:
 class Weapon:
     def __init__(self, canvas, sprite, sprite_rotate, damage, facing) -> None:
         self.canvas = canvas
-        self.img = Image.open(sprite).resize((8, 45), Image.ANTIALIAS).rotate(-10, resample=Image.BICUBIC, expand=True)
-        self.img_rotate = Image.open(sprite_rotate).resize((8, 45), Image.ANTIALIAS).rotate(10, resample=Image.BICUBIC, expand=True)
+        self.img = Image.open(sprite)
+        self.img_rotate = Image.open(sprite_rotate)
         self.file = ImageTk.PhotoImage(self.img)
         self.file_rotate = ImageTk.PhotoImage(self.img_rotate)
 
@@ -102,7 +102,7 @@ class Weapon:
         if self.attacking:
             if facing:
                 self.canvas.delete(self.id)
-                self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.animation_frames[self.attacking_frame])
+                self.id = self.canvas.create_image((playercoords[2]+10,playercoords[3]-80), image=self.animation_frames[self.attacking_frame])
                 self.attacking_frame += 1
                 if self.attacking_frame >= 23:
                     self.attacking_frame = 0
@@ -110,7 +110,7 @@ class Weapon:
         
             else:
                 self.canvas.delete(self.id)
-                self.id = self.canvas.create_image((playercoords[2]-12,playercoords[3]-37), image=self.animation_frames_reverse[self.attacking_frame])
+                self.id = self.canvas.create_image((playercoords[2]-35,playercoords[3]-80), image=self.animation_frames_reverse[self.attacking_frame])
                 self.attacking_frame += 1
                 if self.attacking_frame >= 23:
                     self.attacking_frame = 0
@@ -119,9 +119,9 @@ class Weapon:
         else:
             coords = self.canvas.coords(self.id)
             if facing:
-                self.canvas.move(self.id, playercoords[2] - coords[0]+3, playercoords[3] - coords[1]-37)
+                self.canvas.move(self.id, playercoords[2] - coords[0]+10, playercoords[3] - coords[1]-80)
             else:
-                self.canvas.move(self.id, playercoords[2] - coords[0]-12, playercoords[3] - coords[1]-37)
+                self.canvas.move(self.id, playercoords[2] - coords[0]-35, playercoords[3] - coords[1]-80)
         
     def face_left(self):
         self.attacking_frame = 0
@@ -178,7 +178,7 @@ class Environment:
         self.canvas.delete(self.id)
 
 class Player:
-    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot, facing):
+    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot, facing, sprite, sprite_reverse):
         self.canvas = canvas
         self.color = color
         self.Attack = Attack
@@ -186,7 +186,12 @@ class Player:
         self.Left = Left
         self.Right = Right
         self.Power = Power
-        self.id = self.canvas.create_rectangle(0, 0, 10, 50, fill=self.color)
+        #self.id is hitbox
+        self.id = self.canvas.create_rectangle(0, 0, 20, 100, outline="")
+        self.img = Image.open(sprite)
+        self.img_reverse = Image.open(sprite_reverse)
+        self.file = ImageTk.PhotoImage(self.img)
+        self.file_reverse = ImageTk.PhotoImage(self.img_reverse)
         self.canvas.move(self.id, startingposX, startingposY)
         self.acceleration_y = 0.6
         self.velocity_y = 0
@@ -205,8 +210,10 @@ class Player:
         self.damagecooldown = 0
 
         if facing == "right":
+            self.sprite = self.canvas.create_image((startingposX + 10, startingposY + 48), image=self.file)
             self.facing = True
         elif facing == "left":
+            self.sprite = self.canvas.create_image((startingposX + 10, startingposY + 48), image=self.file_reverse)
             self.facing = False
         else:
             raise ValueError(f"Player facing attribute can either be, 'left', or 'right', not '{facing}'")
@@ -239,20 +246,25 @@ class Player:
 
     def draw(self):
         self.canvas.move(self.id, self.velocity_x, self.velocity_y)
+        self.canvas.move(self.sprite, self.velocity_x, self.velocity_y)
+
         self.velocity_y += self.acceleration_y
         coords = canvas.coords(self.id)
         if coords[3] > 680:
             self.velocity_y = 0
             self.canvas.move(self.id, 0, 680-coords[3])
+            self.canvas.move(self.sprite, 0, 680-coords[3])
             self.jump_count = 2
             self.player_inertia = 0.8
         
         if coords[2] < 10:
             self.velocity_x = 0
             self.canvas.move(self.id, 10-coords[2], 0)
+            self.canvas.move(self.sprite, 10-coords[2]-50, 0)
         elif coords[2] > 1271:
             self.velocity_x = 0
             self.canvas.move(self.id, 1271-coords[2], 0)
+            self.canvas.move(self.sprite, 1271-coords[2] - 50, 0)
         
         self.weapon.draw(canvas.coords(self.id), self.facing)
         
@@ -345,14 +357,14 @@ def startgame():
     ground = Tile(canvas, 0, 720, 1280, 680, "green")
     p1weapon = Weapon(canvas, "assets\\images\\firesword.png", "assets\\images\\firesword_rotate.png", 15, True)
     p1healthbar = HealthBar(canvas, 0, 50)
-    player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right')
+    player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right', "assets\\images\\firewizard.png", "assets\\images\\firewizard_reverse.png")
 
     env = Environment(canvas)
 
 
     p2healthbar = HealthBar(canvas, 1180, 50)
     p2weapon = Weapon(canvas, "assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png", 15, False)
-    player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left')
+    player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left', "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
 
     player1.enemy = player2
     player2.enemy = player1
