@@ -58,6 +58,7 @@ class HealthBar:
         self.canvas.move(self.outline, self.startingposX, self.startingposY)
     
     def update(self, newhealth):
+        newhealth = max(0, newhealth)
         x0,y0,x1,y1 = self.canvas.coords(self.fillid)
         x1 = self.startingposX + newhealth
         # x1 = newhealth
@@ -258,11 +259,10 @@ class Player:
         # Check if we're attacked
         if self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]) and self.enemy.weapon.attacking:
             self.damage(self.enemy.weapon.damage)
-            self.velocity_y = -10
             if self.enemy.facing:
-                self.velocy_x = 10
+                self.velocity_x = 20
             else:
-                self.velocity_x = -10
+                self.velocity_x = -20       
         
         # Slowly adding drift so it's more natural
         if self.deactivated:
@@ -277,14 +277,8 @@ class Player:
 
     def damage(self, damage_amount):
         # Small attack cooldown
-        if self.damagecooldown:
-            self.canvas.itemconfig(self.id, fill=self.color)
-            self.damagecooldown -= 1
-        else:
-            self.health -= damage_amount
-            self.healthbar.update(self.health)
-            self.canvas.itemconfig(self.id, fill='darkred')
-            self.damagecooldown = 5
+        self.health -= damage_amount
+        self.healthbar.update(self.health)
         
         if self.health <= 0:
             self.die()
@@ -293,9 +287,7 @@ class Player:
         self.canvas.create_text(600,320,fill=self.enemy.color,font="Times 50 bold",text=f"{self.enemy.name} wins!")
 
         self.canvas.unbind(f"<KeyPress-{self.Attack}>")
-        self.canvas.unbind(f"<KeyPress-{self.enemy.Attack}>")
         self.canvas.unbind(f"<KeyPress-{self.Power}>")
-        self.canvas.unbind(f"<KeyPress-{self.enemy.Power}>")
         btn = Button(tk, text='New Game', width=40, height=5, bd='10', command=startgame)
         btn.place(x=65, y=100)
         global isdone
