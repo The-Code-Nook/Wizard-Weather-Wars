@@ -41,16 +41,23 @@ class Weapon:
         self.id = self.canvas.create_image((100,100), image=self.file)
         self.rotation = 0
         self.attacking = False
+
+        self.animation_frames = [self.img]
+        rotation = -10
+        while rotation <= 12:
+            self.animation_frames.append(self.animation_frames[-1].rotate(rotation, resample=Image.BICUBIC, expand=True))
+            rotation += 1
+        self.animation_frames = [ImageTk.PhotoImage(frame) for frame in self.animation_frames]
+        
+        self.attacking_frame = 0
     
     def draw(self, playercoords):
         if self.attacking:
-            self.img = self.img.rotate(self.rotation, resample=Image.BICUBIC, expand=True)
-            self.file = ImageTk.PhotoImage(self.img)
             self.canvas.delete(self.id)
-            self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.file)
-            self.rotation += 1
-            if self.rotation > 12:
-                self.rotation = 0
+            self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.animation_frames[self.attacking_frame])
+            self.attacking_frame += 1
+            if self.attacking_frame >= 23:
+                self.attacking_frame = 0
                 self.attacking = False
         else:
             coords = self.canvas.coords(self.id)
@@ -59,7 +66,7 @@ class Weapon:
     
     def attack(self, button):
         if not self.attacking:
-            self.rotation = -12
+            self.attacking_frame = 1
             self.attacking = True
 
 
