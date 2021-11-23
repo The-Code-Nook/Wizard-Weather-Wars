@@ -460,7 +460,7 @@ class Environment:
         self.delete_countdown = 100
 
 class Player:
-    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot):
+    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot, facing):
         self.canvas = canvas
         self.color = color
         self.Attack = Attack
@@ -485,6 +485,13 @@ class Player:
         self.healthbar = healthbar
         self.enemy = None
         self.damagecooldown = 0
+
+        if facing == "right":
+            facing = True
+        elif facing == "left":
+            facing = False
+        else:
+            raise ValueError(f"Player facing attribute can either be, 'left', or 'right', not '{facing}'")
 
         self.canvas.bind_all(f"<KeyPress-{self.Up}>", self.jump)
         self.canvas.bind_all(f"<KeyPress-{self.Left}>", self.left)
@@ -520,7 +527,7 @@ class Player:
             self.velocity_y = 0
             self.canvas.move(self.id, 0, 680-coords[3])
             self.jump_count = 2
-            self.player_inertia = 0.4
+            self.player_inertia = 0.8
         
         if coords[2] < 10:
             self.velocity_x = 0
@@ -631,10 +638,11 @@ def startgame():
     if env.environment == "cold":
         env.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
     '''
-    
+
     try:
+        env.draw()
         while not isdone:
-            env.draw()
+            #env.draw()
 
             player1.draw()
             p1weapon.draw(canvas.coords(player1.id))
@@ -645,7 +653,7 @@ def startgame():
             tk.update_idletasks()
             tk.update()
             # 80 fps
-            time.sleep(0.0125)
+            time.sleep(0.01)
         else:
             del ground
 
