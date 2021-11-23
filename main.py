@@ -26,10 +26,10 @@ class Tile:
 class HealthBar:
     def __init__(self, canvas, startingposX, startingposY):
         self.canvas = canvas
-        self.id = self.canvas.create_rectangle(0, 0, 100, 10, fill="Red")
+        self.fillid = self.canvas.create_rectangle(0, 0, 100, 10, fill="Red")
         self.canvas.move(self.id, startingposX, startingposY)
     
-    def update(newhealth):
+    def update(self, newhealth):
         pass
 
 
@@ -63,7 +63,7 @@ class Weapon:
         else:
             coords = self.canvas.coords(self.id)
             self.canvas.move(self.id, playercoords[2] - coords[0]+3, playercoords[3] - coords[1]-37)
-    
+
     def attack(self, button):
         if not self.attacking:
             self.attacking_frame = 1
