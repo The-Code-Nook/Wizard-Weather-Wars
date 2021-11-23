@@ -35,10 +35,9 @@ tk.geometry("+0+0")
 # 720x1280 screen
 canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
 canvas.configure(bg="skyblue")
+
 canvas.pack()
 tk.update()
-canvas.create_text(600,50,fill="darkblue",font="Comic_Sans 40 italic bold",
-                        text="WIZARD WEATHER WARS")
 
 class Tile:
     def __init__(self, canvas, x1, y1, x2, y2, color):
@@ -346,12 +345,16 @@ def on_quit():
     tk.destroy()
 
 tk.protocol("WM_DELETE_WINDOW", on_quit)
+canvas.create_text(600,50,fill="darkblue",font="Comic_Sans 40 italic bold",
+                        text="WIZARD WEATHER WARS")
 
 def startgame():
     global env
     
     isdone = False
     canvas.delete("all")
+    canvas.create_text(600, 50, fill="darkblue", font="Comic_Sans 40 italic bold",
+                       text="WIZARD WEATHER WARS")
 
     env = Environment(canvas)
 
