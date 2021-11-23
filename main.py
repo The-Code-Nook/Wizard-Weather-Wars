@@ -373,11 +373,18 @@ class Tile:
 class HealthBar:
     def __init__(self, canvas, startingposX, startingposY):
         self.canvas = canvas
-        self.id = self.canvas.create_rectangle(0, 0, 100, 10, fill="Red")
-        self.canvas.move(self.id, startingposX, startingposY)
+        self.fillid = self.canvas.create_rectangle(0, 0, 0, 10, fill="Red")
+        self.outline = self.canvas.create_rectangle(0, 0, 100, 10)
+        self.startingposX = startingposX
+        self.startingposY = startingposY
+        self.canvas.move(self.fillid, self.startingposX, self.startingposY)
+        self.canvas.move(self.outline, self.startingposX, self.startingposY)
     
     def update(self, newhealth):
-        pass
+        x0,y0,x1,y1 = self.canvas.coords(self.fillid)
+        x1 = self.startingposX + newhealth
+        # x1 = newhealth
+        self.canvas.coords(self.fillid, x0, y0, x1, y1)
 
 
 class Weapon:
@@ -459,6 +466,7 @@ class Player:
         self.left_stop = True
         self.right_stop = True
         self.isHot = isHot
+        self.name = name
         # player inertia is friction
         self.player_inertia = 0.08
         self.deactivated = True
@@ -541,7 +549,7 @@ class Player:
             self.die()
     
     def die(self):
-        print("You died!")
+        self.canvas.create_text(600,320,fill=self.enemy.color,font="Times 50 bold",text=f"{self.enemy.name} wins!")
     
     def jump(self, button):
         if self.jump_count:
@@ -579,11 +587,13 @@ tk.protocol("WM_DELETE_WINDOW", on_quit)
 ground = Tile(canvas, 0, 720, 1280, 680, "green")
 p1weapon = Weapon(canvas, "assets\\images\\firesword.png", 15)
 p1healthbar = HealthBar(canvas, 0, 50)
-player1 = Player(canvas, "w", "a", "d", "c", "Red", 245, 100, p1weapon, p1healthbar)
+
+player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar)
 env = Environment(canvas)
+
 p2healthbar = HealthBar(canvas, 1180, 50)
 p2weapon = Weapon(canvas, "assets\\images\\icesword.png", 15)
-player2 = Player(canvas, "Up", "Left", "Right", "m", "Green", 1035, 100, p2weapon, p2healthbar)
+player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2")
 
 player1.enemy = player2
 player2.enemy = player1
