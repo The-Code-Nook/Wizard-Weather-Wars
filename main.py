@@ -637,7 +637,7 @@ def startgame():
             tk.update_idletasks()
             tk.update()
             # 80 fps
-            time.sleep(0.125)
+            time.sleep(0.0125)
         else:
             del ground
 
