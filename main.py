@@ -305,7 +305,7 @@ def findWeather():
               ['Monrovia', 'California'], ['Weslaco', 'Texas'], ['Keizer', 'Oregon'], ['Spanish Fork', 'Utah'],
               ['Beloit', 'Wisconsin'], ['Panama City', 'Florida']]
     city, state = random.choice(cities)
-    url = "https://www.google.com/search?q=" + "weather in " + city
+    url = "https://www.google.com/search?q=" + r"weather%20in%20" + city.replace(r" ", r"%20")
     html = requests.get(url).content
     soup = bs(html, 'html.parser')
     temp = soup.find('div', attrs={'class': 'BNeawe iBp4i AP7Wnd'}).text
@@ -585,11 +585,10 @@ class Player:
         global environment
         if self.isHot:
             environment = "hot"
-            self.drawHot("assets\\images\\Ellipse 231.png")
+            env.drawHot("assets\\images\\Ellipse 231.png")
         else:
             environment = "cold"
-            self.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
-
+            env.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
 
 
 isdone = False
@@ -601,6 +600,8 @@ def on_quit():
 tk.protocol("WM_DELETE_WINDOW", on_quit)
 
 def startgame():
+    global env
+    
     isdone = False
     canvas.delete("all")
 
