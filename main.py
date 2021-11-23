@@ -34,13 +34,14 @@ class HealthBar:
 
 
 class Weapon:
-    def __init__(self, canvas, sprite) -> None:
+    def __init__(self, canvas, sprite, damage) -> None:
         self.canvas = canvas
         self.img = Image.open(sprite).resize((8, 45), Image.ANTIALIAS).rotate(-10, resample=Image.BICUBIC, expand=True)
         self.file = ImageTk.PhotoImage(self.img)
         self.id = self.canvas.create_image((100,100), image=self.file)
         self.rotation = 0
         self.attacking = False
+        self.damage = damage
 
         self.animation_frames = [self.img]
         rotation = -10
@@ -62,7 +63,6 @@ class Weapon:
         else:
             coords = self.canvas.coords(self.id)
             self.canvas.move(self.id, playercoords[2] - coords[0]+3, playercoords[3] - coords[1]-37)
-
     
     def attack(self, button):
         if not self.attacking:
@@ -73,7 +73,8 @@ class Weapon:
 class Player:
     def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar):
         self.canvas = canvas
-        self.id = self.canvas.create_rectangle(0, 0, 10, 50, fill=color)
+        self.color = color
+        self.id = self.canvas.create_rectangle(0, 0, 10, 50, fill=self.color)
         self.canvas.move(self.id, startingposX, startingposY)
         self.acceleration_y = 0.6
         self.velocity_y = 0
@@ -86,6 +87,8 @@ class Player:
         self.deactivated = True
         self.weapon = weapon
         self.healthbar = healthbar
+        self.enemy = None
+        self.damagecooldown = 0
 
         self.canvas.bind_all(f"<KeyPress-{Up}>", self.jump)
         self.canvas.bind_all(f"<KeyPress-{Left}>", self.left)
@@ -96,6 +99,12 @@ class Player:
 
         self.canvas.tag_raise(self.id)
 
+        self.health = 100
+        self.healthbar.update(self.health)
+        # This will range from 0.1 to 1.9 depending on the weather
+        self.attack_multiplier = 1
+        self.defense_multiplier = 1
+    
     def left_stopper(self, button):
         self.left_stop = True
         if self.left_stop and self.right_stop:
@@ -114,7 +123,7 @@ class Player:
             self.velocity_y = 0
             self.canvas.move(self.id, 0, 680-coords[3])
             self.jump_count = 2
-            self.player_inertia = 0.3
+            self.player_inertia = 0.4
         
         if coords[2] < 10:
             self.velocity_x = 0
@@ -122,6 +131,11 @@ class Player:
         elif coords[2] > 1271:
             self.velocity_x = 0
             self.canvas.move(self.id, 1271-coords[2], 0)
+        
+        # Check if we're attacked
+        # print(self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]))
+        if self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]) and self.enemy.weapon.attacking:
+            self.damage(self.enemy.weapon.damage)
         
         # Slowly adding drift so it's more natural
         if self.deactivated:
@@ -133,7 +147,23 @@ class Player:
                 self.velocity_x -= self.player_inertia
                 if self.velocity_x < 0:
                     self.velocity_x = 0
+
+    def damage(self, damage_amount):
+        # Small attack cooldown
+        if self.damagecooldown:
+            self.canvas.itemconfig(self.id, fill=self.color)
+            self.damagecooldown -= 1
+        else:
+            self.health -= damage_amount
+            self.healthbar.update(self.health)
+            self.canvas.itemconfig(self.id, fill='darkred')
+            self.damagecooldown = 5
         
+        if self.health <= 0:
+            self.die()
+    
+    def die(self):
+        print("You died!")
     
     def jump(self, button):
         if self.jump_count:
@@ -162,13 +192,16 @@ def on_quit():
 tk.protocol("WM_DELETE_WINDOW", on_quit)
 
 ground = Tile(canvas, 0, 720, 1280, 680, "green")
-p1weapon = Weapon(canvas, "assets\\images\\firesword.png")
+p1weapon = Weapon(canvas, "assets\\images\\firesword.png", 15)
 p1healthbar = HealthBar(canvas, 0, 50)
 player1 = Player(canvas, "w", "a", "d", "c", "Red", 245, 100, p1weapon, p1healthbar)
 
 p2healthbar = HealthBar(canvas, 1180, 50)
-p2weapon = Weapon(canvas, "assets\\images\\icesword.png")
+p2weapon = Weapon(canvas, "assets\\images\\icesword.png", 15)
 player2 = Player(canvas, "Up", "Left", "Right", "m", "Green", 1035, 100, p2weapon, p2healthbar)
+
+player1.enemy = player2
+player2.enemy = player1
 
 try:
     while not isdone:
