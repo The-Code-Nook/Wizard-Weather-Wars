@@ -7,6 +7,7 @@ tk = Tk()
 tk.title("Wizard Weather Wars")
 tk.resizable(0,0)
 tk.wm_attributes("-topmost", 1)
+# 720x1280 screen
 canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
 canvas.pack()
 tk.update()
@@ -20,17 +21,18 @@ class Tile:
     
 
 class Player:
-    def __init__(self, canvas, Up, Left, Right, color):
+    def __init__(self, canvas, Up, Left, Right, color, startingposX, startingposY):
         self.canvas = canvas
         self.id = self.canvas.create_rectangle(0, 0, 10, 50, fill=color)
-        self.canvas.move(self.id, 245, 100)
+        self.canvas.move(self.id, startingposX, startingposY)
         self.acceleration_y = 0.6
         self.velocity_y = 0
         self.velocity_x = 0
         self.jump_count = 0
         self.left_stop = True
         self.right_stop = True
-        self.player_inertia = 0.3
+        # player inertia is friction
+        self.player_inertia = 0.08
         self.deactivated = True
 
         self.canvas.bind_all(f"<KeyPress-{Up}>", self.jump)
@@ -59,6 +61,14 @@ class Player:
             self.jump_count = 2
             self.player_inertia = 0.3
         
+        if coords[2] < 10:
+            self.velocity_x = 0
+            self.canvas.move(self.id, 10-coords[2], 0)
+        elif coords[2] > 1271:
+            self.velocity_x = 0
+            self.canvas.move(self.id, 1271-coords[2], 0)
+        
+        # Slowly adding drift so it's more natural
         if self.deactivated:
             if self.velocity_x < 0:
                 self.velocity_x += self.player_inertia
@@ -68,11 +78,13 @@ class Player:
                 self.velocity_x -= self.player_inertia
                 if self.velocity_x < 0:
                     self.velocity_x = 0
+        
     
     def jump(self, button):
         if self.jump_count:
             self.velocity_y = -12
             self.jump_count -= 1
+            # The friction needs to change in the air so the jump is smooth
             self.player_inertia = 0.08
     
     def left(self, button):
@@ -87,8 +99,8 @@ class Player:
 
 
 ground = Tile(canvas, 0, 720, 1280, 680, "green")
-player1 = Player(canvas, "w", "a", "d", "Red")
-player2 = Player(canvas, "Up", "Left", "Right", "Green")
+player1 = Player(canvas, "w", "a", "d", "Red", 245, 100)
+player2 = Player(canvas, "Up", "Left", "Right", "Green", 1035, 100)
 while True:
     player1.draw()
     player2.draw()
