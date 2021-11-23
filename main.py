@@ -394,11 +394,18 @@ class HealthBar:
 
 
 class Weapon:
-    def __init__(self, canvas, sprite, damage) -> None:
+    def __init__(self, canvas, sprite, sprite_rotate, damage, facing) -> None:
         self.canvas = canvas
         self.img = Image.open(sprite).resize((8, 45), Image.ANTIALIAS).rotate(-10, resample=Image.BICUBIC, expand=True)
+        self.img_rotate = Image.open(sprite_rotate).resize((8, 45), Image.ANTIALIAS).rotate(10, resample=Image.BICUBIC, expand=True)
         self.file = ImageTk.PhotoImage(self.img)
-        self.id = self.canvas.create_image((100,100), image=self.file)
+        self.file_rotate = ImageTk.PhotoImage(self.img_rotate)
+
+        if facing:
+            self.id = self.canvas.create_image((100,100), image=self.file)
+        else:
+            self.id = self.canvas.create_image((100,100), image=self.file_rotate)
+
         self.rotation = 0
         self.attacking = False
         self.damage = damage
@@ -409,20 +416,52 @@ class Weapon:
             self.animation_frames.append(self.animation_frames[-1].rotate(rotation, resample=Image.BICUBIC, expand=True))
             rotation += 1
         self.animation_frames = [ImageTk.PhotoImage(frame) for frame in self.animation_frames]
+
+        self.animation_frames_reverse = [self.img_rotate]
+        rotation = 10
+        while rotation >= -12:
+            self.animation_frames_reverse.append(self.animation_frames_reverse[-1].rotate(rotation, resample=Image.BICUBIC, expand=True))
+            rotation -= 1
+        self.animation_frames_reverse = [ImageTk.PhotoImage(frame) for frame in self.animation_frames_reverse]
         
         self.attacking_frame = 0
     
-    def draw(self, playercoords):
+    def draw(self, playercoords, facing):
         if self.attacking:
-            self.canvas.delete(self.id)
-            self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.animation_frames[self.attacking_frame])
-            self.attacking_frame += 1
-            if self.attacking_frame >= 23:
-                self.attacking_frame = 0
-                self.attacking = False
+            if facing:
+                self.canvas.delete(self.id)
+                self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.animation_frames[self.attacking_frame])
+                self.attacking_frame += 1
+                if self.attacking_frame >= 23:
+                    self.attacking_frame = 0
+                    self.attacking = False
+        
+            else:
+                self.canvas.delete(self.id)
+                self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.animation_frames_reverse[self.attacking_frame])
+                self.attacking_frame += 1
+                if self.attacking_frame >= 23:
+                    self.attacking_frame = 0
+                    self.attacking = False
+
         else:
             coords = self.canvas.coords(self.id)
-            self.canvas.move(self.id, playercoords[2] - coords[0]+3, playercoords[3] - coords[1]-37)
+            if facing:
+                self.canvas.move(self.id, playercoords[2] - coords[0]+3, playercoords[3] - coords[1]-37)
+            else:
+                self.canvas.move(self.id, playercoords[2] - coords[0]-12, playercoords[3] - coords[1]-37)
+        
+    def face_left(self):
+        self.attacking_frame = 0
+        self.canvas.delete(self.id)
+        self.id = self.canvas.create_image((100,100), image=self.file_rotate)
+        self.attacking = False
+
+    def face_right(self):
+        self.attacking_frame = 0
+        self.canvas.delete(self.id)
+        self.id = self.canvas.create_image((100,100), image=self.file)
+        self.attacking = False
 
     def attack(self, button):
         if not self.attacking:
@@ -487,9 +526,9 @@ class Player:
         self.damagecooldown = 0
 
         if facing == "right":
-            facing = True
+            self.facing = True
         elif facing == "left":
-            facing = False
+            self.facing = False
         else:
             raise ValueError(f"Player facing attribute can either be, 'left', or 'right', not '{facing}'")
 
@@ -536,7 +575,7 @@ class Player:
             self.velocity_x = 0
             self.canvas.move(self.id, 1271-coords[2], 0)
         
-        self.weapon.draw(canvas.coords(self.id))
+        self.weapon.draw(canvas.coords(self.id), self.facing)
         
         # Check if we're attacked
         if self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]) and self.enemy.weapon.attacking:
@@ -621,7 +660,7 @@ def startgame():
     canvas.delete("all")
 
     ground = Tile(canvas, 0, 720, 1280, 680, "green")
-    p1weapon = Weapon(canvas, "assets\\images\\firesword.png", 15)
+    p1weapon = Weapon(canvas, "assets\\images\\firesword.png", "assets\\images\\firesword_rotate.png", 15, True)
     p1healthbar = HealthBar(canvas, 0, 50)
     player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right')
 
@@ -629,7 +668,7 @@ def startgame():
 
 
     p2healthbar = HealthBar(canvas, 1180, 50)
-    p2weapon = Weapon(canvas, "assets\\images\\icesword.png", 15)
+    p2weapon = Weapon(canvas, "assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png", 15, False)
     player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left')
 
     player1.enemy = player2
@@ -648,14 +687,11 @@ def startgame():
             #env.draw()
 
             player1.draw()
-            #p1weapon.draw(canvas.coords(player1.id))
 
             player2.draw()
-            #p2weapon.draw(canvas.coords(player2.id))
 
             tk.update_idletasks()
             tk.update()
-            # 80 fps
             time.sleep(0.01)
         else:
             del ground
