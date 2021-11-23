@@ -472,16 +472,18 @@ class Environment:
     def __init__(self, canvas) -> None:
         self.canvas = canvas
         self.delete_countdown = -1
-        self.environment = "normal"
+        self.loadingtext1 = None
+        self.id = None
     
     def draw(self):
         if self.delete_countdown > 0:
             self.delete_countdown -= 1
         elif self.delete_countdown == 0:
-            self.canvas.delete(self.loadingtext1)
+            self.clear()
             self.delete_countdown = -1
 
     def drawHot(self, sprite1):
+        self.clear()
         self.img = Image.open(sprite1).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
         self.id = self.canvas.create_image((100, 100), image=self.file)
@@ -489,14 +491,19 @@ class Environment:
         self.delete_countdown = 100
     
     def drawCold(self, sprite2, sprite3):
+        self.clear()
         self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
         self.id = self.canvas.create_image((100, 100), image=self.file)
-        self.img2 = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
-        self.file2 = ImageTk.PhotoImage(self.img2)
-        self.id2 = self.canvas.create_image((100, 100), image=self.file2)
+        self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
+        self.file = ImageTk.PhotoImage(self.img)
+        self.id = self.canvas.create_image((100, 100), image=self.file)
         self.loadingtext1 = canvas.create_text(600, 200, text="Power UP! Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
         self.delete_countdown = 100
+    
+    def clear(self):
+        self.canvas.delete(self.loadingtext1)
+        self.canvas.delete(self.id)
 
 class Player:
     def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot, facing):
