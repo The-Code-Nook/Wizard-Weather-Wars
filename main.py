@@ -427,21 +427,22 @@ class Weapon:
 class Environment:
     def __init__(self, canvas) -> None:
         self.canvas = canvas
+        self.delete_countdown = -1
+    
+    def draw(self):
+        if self.delete_countdown > 0:
+            self.delete_countdown -= 1
+        elif self.delete_countdown == 0:
+            self.canvas.delete(self.loadingtext1)
+            self.delete_countdown = -1
 
     def drawHot(self, sprite1):
-        print("hello")
         self.img = Image.open(sprite1).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
         self.id = self.canvas.create_image((100, 100), image=self.file)
-        #self.canvas.create_text(600, 200, fill="orange", font="Comic_Sans 20 italic bold",
-                           #text="Power UP! Environment is now HOT!")
-        loadingtext1 = canvas.create_text(600, 200)
-        canvas.itemconfig(loadingtext1, text="Power UP! Environment is now HOT!", font="Comic_Sans 20 italic bold", fill="orange")
-        tk.after(1000, lambda: canvas.delete(loadingtext1))
-        #self.canvas.move(self.id, 500, 800)
-        self.img2 = Image
-        self.file2 = PhotoImage
-        self.id2 = None
+        self.loadingtext1 = canvas.create_text(600, 200, text="Power UP! Environment is now HOT!", font="Comic_Sans 20 italic bold", fill="orange")
+        self.delete_countdown = 100
+    
     def drawCold(self, sprite2, sprite3):
         self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
@@ -449,10 +450,8 @@ class Environment:
         self.img2 = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
         self.file2 = ImageTk.PhotoImage(self.img2)
         self.id2 = self.canvas.create_image((100, 100), image=self.file2)
-        loadingtext1 = canvas.create_text(600, 200)
-        canvas.itemconfig(loadingtext1, text="Power UP! Environment is now COLD!", font="Comic_Sans 20 italic bold",
-                          fill="blue")
-        tk.after(1000, lambda: canvas.delete(loadingtext1))
+        self.loadingtext1 = canvas.create_text(600, 200, text="Power UP! Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
+        self.delete_countdown = 100
 
 class Player:
     def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot):
@@ -525,7 +524,6 @@ class Player:
             self.canvas.move(self.id, 1271-coords[2], 0)
         
         # Check if we're attacked
-        # print(self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]))
         if self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]) and self.enemy.weapon.attacking:
             self.damage(self.enemy.weapon.damage)
         
@@ -582,13 +580,16 @@ class Player:
         self.velocity_x = 7
         self.right_stop = False
         self.deactivated = False
+    
     def powerUp(self, button):
         global environment
         if self.isHot:
             environment = "hot"
-            #print("hot now baby")
+            self.drawHot("assets\\images\\Ellipse 231.png")
         else:
             environment = "cold"
+            self.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
+
 
 
 isdone = False
@@ -617,24 +618,26 @@ def startgame():
 
     player1.enemy = player2
     player2.enemy = player1
+
+    if environment == "hot":
+        env.drawHot("assets\\images\\Ellipse 231.png")
+    if environment == "cold":
+        env.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
+
     try:
         while not isdone:
+            env.draw()
+
             player1.draw()
             p1weapon.draw(canvas.coords(player1.id))
 
             player2.draw()
             p2weapon.draw(canvas.coords(player2.id))
 
-            if environment == "hot":
-                #print("reached if check")
-                env.drawHot("assets\\images\\Ellipse 231.png")
-            if environment == "cold":
-                #print("reached cold check")
-                env.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
-
             tk.update_idletasks()
             tk.update()
-            time.sleep(0.01)
+            # 80 fps
+            time.sleep(0.125)
         else:
             del ground
 
