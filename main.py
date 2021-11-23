@@ -188,7 +188,7 @@ class Player:
         self.Right = Right
         self.Power = Power
         #self.id is hitbox
-        self.id = self.canvas.create_rectangle(0, 0, 20, 100)
+        self.id = self.canvas.create_rectangle(0, 0, 20, 100, outline="")
         self.img = Image.open(sprite)
         self.img_reverse = Image.open(sprite_reverse)
         self.file = ImageTk.PhotoImage(self.img)
@@ -378,7 +378,7 @@ def startgame():
     p2healthbar = HealthBar(canvas, 1180, 50)
     p2weapon = Weapon(canvas, "assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png", 15, False)
     player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left', "cold", env, "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
-
+    
     player1.enemy = player2
     player2.enemy = player1
 
