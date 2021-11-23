@@ -1,14 +1,17 @@
 from tkinter import *
 import time
-
-
+from PIL import Image, ImageTk
 
 tk = Tk()
 tk.title("Wizard Weather Wars")
+tk.iconbitmap("assets\\images\\wizard.ico")
 tk.resizable(0,0)
-tk.wm_attributes("-topmost", 1)
+# Place window at topleft of screen
+tk.geometry("+0+0")
+# tk.wm_attributes("-topmost", 1)
 # 720x1280 screen
 canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
+canvas.configure(bg="skyblue")
 canvas.pack()
 tk.update()
 
@@ -30,8 +33,38 @@ class HealthBar:
         pass
 
 
+class Weapon:
+    def __init__(self, canvas, sprite) -> None:
+        self.canvas = canvas
+        self.img = Image.open(sprite).resize((8, 45), Image.ANTIALIAS).rotate(-10, resample=Image.BICUBIC, expand=True)
+        self.file = ImageTk.PhotoImage(self.img)
+        self.id = self.canvas.create_image((100,100), image=self.file)
+        self.rotation = 0
+        self.attacking = False
+    
+    def draw(self, playercoords):
+        if self.attacking:
+            self.img = self.img.rotate(self.rotation, resample=Image.BICUBIC, expand=True)
+            self.file = ImageTk.PhotoImage(self.img)
+            self.canvas.delete(self.id)
+            self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.file)
+            self.rotation += 1
+            if self.rotation > 12:
+                self.rotation = 0
+                self.attacking = False
+        else:
+            coords = self.canvas.coords(self.id)
+            self.canvas.move(self.id, playercoords[2] - coords[0]+3, playercoords[3] - coords[1]-37)
+
+    
+    def attack(self, button):
+        if not self.attacking:
+            self.rotation = -12
+            self.attacking = True
+
+
 class Player:
-    def __init__(self, canvas, Up, Left, Right, color, startingposX, startingposY):
+    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar):
         self.canvas = canvas
         self.id = self.canvas.create_rectangle(0, 0, 10, 50, fill=color)
         self.canvas.move(self.id, startingposX, startingposY)
@@ -44,12 +77,17 @@ class Player:
         # player inertia is friction
         self.player_inertia = 0.08
         self.deactivated = True
+        self.weapon = weapon
+        self.healthbar = healthbar
 
         self.canvas.bind_all(f"<KeyPress-{Up}>", self.jump)
         self.canvas.bind_all(f"<KeyPress-{Left}>", self.left)
         self.canvas.bind_all(f"<KeyPress-{Right}>", self.right)
         self.canvas.bind_all(f"<KeyRelease-{Left}>", self.left_stopper)
         self.canvas.bind_all(f"<KeyRelease-{Right}>", self.right_stopper)
+        self.canvas.bind_all(f"<KeyRelease-{Attack}>", self.weapon.attack)
+
+        self.canvas.tag_raise(self.id)
 
     def left_stopper(self, button):
         self.left_stop = True
@@ -107,6 +145,7 @@ class Player:
         self.right_stop = False
         self.deactivated = False
 
+
 isdone = False
 def on_quit():
     global isdone
@@ -116,14 +155,24 @@ def on_quit():
 tk.protocol("WM_DELETE_WINDOW", on_quit)
 
 ground = Tile(canvas, 0, 720, 1280, 680, "green")
-player1 = Player(canvas, "w", "a", "d", "Red", 245, 100)
-player2 = Player(canvas, "Up", "Left", "Right", "Green", 1035, 100)
+p1weapon = Weapon(canvas, "assets\\images\\firesword.png")
 p1healthbar = HealthBar(canvas, 0, 50)
-p2healthbar = HealthBar(canvas, 1180, 50)
+player1 = Player(canvas, "w", "a", "d", "c", "Red", 245, 100, p1weapon, p1healthbar)
 
-while not isdone:
-    player1.draw()
-    player2.draw()
-    tk.update_idletasks()
-    tk.update()
-    time.sleep(0.01)
+p2healthbar = HealthBar(canvas, 1180, 50)
+p2weapon = Weapon(canvas, "assets\\images\\icesword.png")
+player2 = Player(canvas, "Up", "Left", "Right", "m", "Green", 1035, 100, p2weapon, p2healthbar)
+
+try:
+    while not isdone:
+        player1.draw()
+        p1weapon.draw(canvas.coords(player1.id))
+
+        player2.draw()
+        p2weapon.draw(canvas.coords(player2.id))
+
+        tk.update_idletasks()
+        tk.update()
+        time.sleep(0.01)
+except KeyboardInterrupt:
+    print('breh just use the x')
