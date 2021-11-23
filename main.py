@@ -81,6 +81,10 @@ class Player:
     def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name):
         self.canvas = canvas
         self.color = color
+        self.Attack = Attack
+        self.Up = Up
+        self.Left = Left
+        self.Right = Right
         self.id = self.canvas.create_rectangle(0, 0, 10, 50, fill=self.color)
         self.canvas.move(self.id, startingposX, startingposY)
         self.acceleration_y = 0.6
@@ -98,12 +102,12 @@ class Player:
         self.enemy = None
         self.damagecooldown = 0
 
-        self.canvas.bind_all(f"<KeyPress-{Up}>", self.jump)
-        self.canvas.bind_all(f"<KeyPress-{Left}>", self.left)
-        self.canvas.bind_all(f"<KeyPress-{Right}>", self.right)
-        self.canvas.bind_all(f"<KeyRelease-{Left}>", self.left_stopper)
-        self.canvas.bind_all(f"<KeyRelease-{Right}>", self.right_stopper)
-        self.canvas.bind_all(f"<KeyRelease-{Attack}>", self.weapon.attack)
+        self.canvas.bind_all(f"<KeyPress-{self.Up}>", self.jump)
+        self.canvas.bind_all(f"<KeyPress-{self.Left}>", self.left)
+        self.canvas.bind_all(f"<KeyPress-{self.Right}>", self.right)
+        self.canvas.bind_all(f"<KeyRelease-{self.Left}>", self.left_stopper)
+        self.canvas.bind_all(f"<KeyRelease-{self.Right}>", self.right_stopper)
+        self.canvas.bind_all(f"<KeyRelease-{self.Attack}>", self.weapon.attack)
 
         self.canvas.tag_raise(self.id)
 
@@ -172,6 +176,13 @@ class Player:
     
     def die(self):
         self.canvas.create_text(600,320,fill=self.enemy.color,font="Times 50 bold",text=f"{self.enemy.name} wins!")
+
+        self.canvas.unbind(f"<KeyPress-{self.Attack}>")
+        self.canvas.unbind(f"<KeyPress-{self.enemy.Attack}>")
+        btn = Button(tk, text='New Game', width=40, height=5, bd='10', command=startgame)
+        btn.place(x=65, y=100)
+        global isdone
+        isdone = True
     
     def jump(self, button):
         if self.jump_count:
@@ -199,28 +210,46 @@ def on_quit():
 
 tk.protocol("WM_DELETE_WINDOW", on_quit)
 
-ground = Tile(canvas, 0, 720, 1280, 680, "green")
-p1weapon = Weapon(canvas, "assets\\images\\firesword.png", 15)
-p1healthbar = HealthBar(canvas, 0, 50)
-player1 = Player(canvas, "w", "a", "d", "c", "Red", 245, 100, p1weapon, p1healthbar, "Player 1")
 
-p2healthbar = HealthBar(canvas, 1180, 50)
-p2weapon = Weapon(canvas, "assets\\images\\icesword.png", 15)
-player2 = Player(canvas, "Up", "Left", "Right", "m", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2")
+def startgame():
+    isdone = False
+    canvas.delete("all")
 
-player1.enemy = player2
-player2.enemy = player1
+    ground = Tile(canvas, 0, 720, 1280, 680, "green")
+    p1weapon = Weapon(canvas, "assets\\images\\firesword.png", 15)
+    p1healthbar = HealthBar(canvas, 0, 50)
+    player1 = Player(canvas, "w", "a", "d", "c", "Red", 245, 100, p1weapon, p1healthbar, "Player 1")
 
-try:
-    while not isdone:
-        player1.draw()
-        p1weapon.draw(canvas.coords(player1.id))
+    p2healthbar = HealthBar(canvas, 1180, 50)
+    p2weapon = Weapon(canvas, "assets\\images\\icesword.png", 15)
+    player2 = Player(canvas, "Up", "Left", "Right", "m", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2")
 
-        player2.draw()
-        p2weapon.draw(canvas.coords(player2.id))
+    player1.enemy = player2
+    player2.enemy = player1
 
-        tk.update_idletasks()
-        tk.update()
-        time.sleep(0.01)
-except KeyboardInterrupt:
-    print('breh just use the x')
+    try:
+        while not isdone:
+            player1.draw()
+            p1weapon.draw(canvas.coords(player1.id))
+
+            player2.draw()
+            p2weapon.draw(canvas.coords(player2.id))
+
+            tk.update_idletasks()
+            tk.update()
+            time.sleep(0.01)
+        else:
+            del ground
+
+            del p1weapon
+            del p1healthbar
+            del player1
+
+            del p2weapon
+            del p2healthbar
+            del p2ayer1
+    except KeyboardInterrupt:
+        print('breh just use the x')
+
+if __name__ == "__main__":
+    startgame()
