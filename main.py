@@ -58,6 +58,7 @@ class HealthBar:
         self.canvas.move(self.outline, self.startingposX, self.startingposY)
     
     def update(self, newhealth):
+        newhealth = max(newhealth, 0)
         x0,y0,x1,y1 = self.canvas.coords(self.fillid)
         x1 = self.startingposX + newhealth
         # x1 = newhealth
