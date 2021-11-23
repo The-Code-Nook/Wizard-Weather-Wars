@@ -18,7 +18,17 @@ class Tile:
         self.canvas = canvas
         self.id = self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="")
         #self.canvas.move(self.id, 245, 100)
+
+
+class HealthBar:
+    def __init__(self, canvas, startingposX, startingposY):
+        self.canvas = canvas
+        self.id = self.canvas.create_rectangle(0, 0, 100, 10, fill="Red")
+        self.canvas.move(self.id, startingposX, startingposY)
     
+    def update(newhealth):
+        pass
+
 
 class Player:
     def __init__(self, canvas, Up, Left, Right, color, startingposX, startingposY):
@@ -97,11 +107,21 @@ class Player:
         self.right_stop = False
         self.deactivated = False
 
+isdone = False
+def on_quit():
+    global isdone
+    isdone = True
+    tk.destroy()
+
+tk.protocol("WM_DELETE_WINDOW", on_quit)
 
 ground = Tile(canvas, 0, 720, 1280, 680, "green")
 player1 = Player(canvas, "w", "a", "d", "Red", 245, 100)
 player2 = Player(canvas, "Up", "Left", "Right", "Green", 1035, 100)
-while True:
+p1healthbar = HealthBar(canvas, 0, 50)
+p2healthbar = HealthBar(canvas, 1180, 50)
+
+while not isdone:
     player1.draw()
     player2.draw()
     tk.update_idletasks()
