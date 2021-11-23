@@ -438,7 +438,7 @@ class Weapon:
         
             else:
                 self.canvas.delete(self.id)
-                self.id = self.canvas.create_image((playercoords[2]+3,playercoords[3]-37), image=self.animation_frames_reverse[self.attacking_frame])
+                self.id = self.canvas.create_image((playercoords[2]-12,playercoords[3]-37), image=self.animation_frames_reverse[self.attacking_frame])
                 self.attacking_frame += 1
                 if self.attacking_frame >= 23:
                     self.attacking_frame = 0
@@ -636,11 +636,15 @@ class Player:
         self.velocity_x = -7
         self.left_stop = False
         self.deactivated = False
+        self.facing = False
+        self.weapon.face_left()
     
     def right(self, button):
         self.velocity_x = 7
         self.right_stop = False
         self.deactivated = False
+        self.facing = True
+        self.weapon.face_right()
     
     def powerUp(self, button):
         global environment
