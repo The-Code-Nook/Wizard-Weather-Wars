@@ -35,10 +35,9 @@ tk.geometry("+0+0")
 # 720x1280 screen
 canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
 canvas.configure(bg="skyblue")
+
 canvas.pack()
 tk.update()
-canvas.create_text(600,50,fill="darkblue",font="Comic_Sans 40 italic bold",
-                        text="WIZARD WEATHER WARS")
 
 class Tile:
     def __init__(self, canvas, x1, y1, x2, y2, color):
@@ -154,23 +153,25 @@ class Environment:
             self.clear()
             self.delete_countdown = -1
 
-    def drawHot(self, sprite1):
+    def drawHot(self):
         self.clear()
-        self.img = Image.open(sprite1).resize((100, 100), Image.ANTIALIAS)
+        '''self.img = Image.open(sprite1).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
-        self.id = self.canvas.create_image((100, 100), image=self.file)
-        self.loadingtext1 = canvas.create_text(600, 200, text="Power UP! Environment is now HOT!", font="Comic_Sans 20 italic bold", fill="orange")
+        self.id = self.canvas.create_image((100, 100), image=self.file)'''
+        self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now HOT!", font="Comic_Sans 20 italic bold", fill="orange")
         self.delete_countdown = 100
+        canvas.configure(bg="#9acae7")
     
-    def drawCold(self, sprite2, sprite3):
+    def drawCold(self):
         self.clear()
-        self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
+        '''self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
         self.id = self.canvas.create_image((100, 100), image=self.file)
         self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
-        self.id = self.canvas.create_image((100, 100), image=self.file)
-        self.loadingtext1 = canvas.create_text(600, 200, text="Power UP! Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
+        self.id = self.canvas.create_image((100, 100), image=self.file)'''
+        canvas.configure(bg="#d0cccc")
+        self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
         self.delete_countdown = 100
     
     def clear(self):
@@ -178,7 +179,7 @@ class Environment:
         self.canvas.delete(self.id)
 
 class Player:
-    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot, facing, sprite, sprite_reverse):
+    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot, facing, weakness, env, sprite, sprite_reverse):
         self.canvas = canvas
         self.color = color
         self.Attack = Attack
@@ -207,7 +208,10 @@ class Player:
         self.weapon = weapon
         self.healthbar = healthbar
         self.enemy = None
-        self.damagecooldown = 0
+        self.weakness = weakness
+        self.env = env
+        self.sprint_velocity = 7
+        self.jump_height = 12
 
         if facing == "right":
             self.sprite = self.canvas.create_image((startingposX + 10, startingposY + 48), image=self.file)
@@ -224,7 +228,7 @@ class Player:
         self.canvas.bind_all(f"<KeyRelease-{self.Left}>", self.left_stopper)
         self.canvas.bind_all(f"<KeyRelease-{self.Right}>", self.right_stopper)
         self.canvas.bind_all(f"<KeyRelease-{self.Attack}>", self.weapon.attack)
-        self.canvas.bind_all(f"<KeyRelease-{self.Power}>", self.powerUp)
+        #self.canvas.bind_all(f"<KeyRelease-{self.Power}>", self.powerUp)
 
         self.canvas.tag_raise(self.id)
 
@@ -274,7 +278,22 @@ class Player:
             if self.enemy.facing:
                 self.velocity_x = 20
             else:
-                self.velocity_x = -20       
+                self.velocity_x = -20
+
+            if self.weakness == "hot":
+                self.env.drawHot()
+            
+            elif self.weakness == "cold":
+                self.env.drawCold()
+
+            self.sprint_velocity = 4
+            self.enemy.sprint_velocity = 7
+            self.jump_height = 6
+            self.enemy.jump_height = 12
+            self.attack_multiplier = 0.5
+            self.enemy.attack_multiplier = 1
+            
+
         
         # Slowly adding drift so it's more natural
         if self.deactivated:
@@ -307,13 +326,13 @@ class Player:
     
     def jump(self, button):
         if self.jump_count:
-            self.velocity_y = -12
+            self.velocity_y = -self.jump_height
             self.jump_count -= 1
             # The friction needs to change in the air so the jump is smooth
             self.player_inertia = 0.08
     
     def left(self, button):
-        self.velocity_x = -7
+        self.velocity_x = -self.sprint_velocity
         self.left_stop = False
         self.deactivated = False
         old = self.facing
@@ -322,22 +341,13 @@ class Player:
             self.weapon.face_left()
     
     def right(self, button):
-        self.velocity_x = 7
+        self.velocity_x = self.sprint_velocity
         self.right_stop = False
         self.deactivated = False
         old = self.facing
         self.facing = True
         if old != self.facing:
             self.weapon.face_right()
-    
-    def powerUp(self, button):
-        global environment
-        if self.isHot:
-            environment = "hot"
-            env.drawHot("assets\\images\\Ellipse 231.png")
-        else:
-            environment = "cold"
-            env.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
 
 
 isdone = False
@@ -347,39 +357,34 @@ def on_quit():
     tk.destroy()
 
 tk.protocol("WM_DELETE_WINDOW", on_quit)
+canvas.create_text(600,50,fill="darkblue",font="Comic_Sans 40 italic bold",
+                        text="WIZARD WEATHER WARS")
 
 def startgame():
     global env
     
     isdone = False
     canvas.delete("all")
+    canvas.create_text(600, 50, fill="darkblue", font="Comic_Sans 40 italic bold",
+                       text="WIZARD WEATHER WARS")
+
+    env = Environment(canvas)
 
     ground = Tile(canvas, 0, 720, 1280, 680, "green")
     p1weapon = Weapon(canvas, "assets\\images\\firesword.png", "assets\\images\\firesword_rotate.png", 15, True)
     p1healthbar = HealthBar(canvas, 0, 50)
-    player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right', "assets\\images\\firewizard.png", "assets\\images\\firewizard_reverse.png")
-
-    env = Environment(canvas)
-
+    player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right', "hot", env, "assets\\images\\firewizard.png", "assets\\images\\firewizard_reverse.png")
 
     p2healthbar = HealthBar(canvas, 1180, 50)
     p2weapon = Weapon(canvas, "assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png", 15, False)
-    player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left', "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
-
+    player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left', "cold", env, "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
+    
     player1.enemy = player2
     player2.enemy = player1
-
-    '''
-    if env.environment == "hot":
-        env.drawHot("assets\\images\\Ellipse 231.png")
-    if env.environment == "cold":
-        env.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
-    '''
 
     try:
         env.draw()
         while not isdone:
-            #env.draw()
 
             player1.draw()
 
