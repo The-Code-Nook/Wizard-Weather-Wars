@@ -5,6 +5,7 @@ import random
 import requests
 from bs4 import BeautifulSoup as bs
 
+'''
 def findWeather():
     cities = [['New York', 'New York'], ['Los Angeles', 'California'], ['Chicago', 'Illinois'], ['Houston', 'Texas'],
               ['Philadelphia', 'Pennsylvania'], ['Phoenix', 'Arizona'], ['San Antonio', 'Texas'],
@@ -332,6 +333,8 @@ elif tempNum > 75:
     environment = "hot"
 else:
     environment = "normal"
+
+'''
 tk = Tk()
 tk.title("Wizard Weather Wars")
 tk.iconbitmap("assets\\images\\wizard.ico")
@@ -347,6 +350,7 @@ tk.update()
 canvas.create_text(600,50,fill="darkblue",font="Comic_Sans 40 italic bold",
                         text="WIZARD WEATHER WARS")
 
+'''
 wInfo1 = canvas.create_text(1150, 200)
 wInfo2 = canvas.create_text(1150, 220)
 wInfo3 = canvas.create_text(1150, 240)
@@ -363,6 +367,7 @@ canvas.itemconfig(wInfo2, text=s1part2, font="Times 15 bold", fill="black")
 canvas.itemconfig(wInfo3, text=s2, font="Times 15 bold", fill="black")
 canvas.itemconfig(wInfo4, text=s3, font="Times 15 bold", fill="black")
 canvas.itemconfig(wInfo5, text=s4, font="Times 8 italic", fill="black")
+'''
 
 class Tile:
     def __init__(self, canvas, x1, y1, x2, y2, color):
@@ -428,6 +433,7 @@ class Environment:
     def __init__(self, canvas) -> None:
         self.canvas = canvas
         self.delete_countdown = -1
+        self.environment = "normal"
     
     def draw(self):
         if self.delete_countdown > 0:
@@ -619,11 +625,13 @@ def startgame():
     player1.enemy = player2
     player2.enemy = player1
 
-    if environment == "hot":
+    '''
+    if env.environment == "hot":
         env.drawHot("assets\\images\\Ellipse 231.png")
-    if environment == "cold":
+    if env.environment == "cold":
         env.drawCold("assets\\images\\Cloud 1.png", "assets\\images\\Cloud 2.png")
-
+    '''
+    
     try:
         while not isdone:
             env.draw()
