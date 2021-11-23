@@ -188,7 +188,7 @@ class Player:
         self.Right = Right
         self.Power = Power
         #self.id is hitbox
-        self.id = self.canvas.create_rectangle(0, 0, 20, 100)
+        self.id = self.canvas.create_rectangle(0, 0, 20, 100, outline="")
         self.img = Image.open(sprite)
         self.img_reverse = Image.open(sprite_reverse)
         self.file = ImageTk.PhotoImage(self.img)
