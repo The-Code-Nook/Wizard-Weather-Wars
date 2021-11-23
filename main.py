@@ -26,7 +26,7 @@ class Tile:
 class HealthBar:
     def __init__(self, canvas, startingposX, startingposY):
         self.canvas = canvas
-        self.fillid = self.canvas.create_rectangle(0, 0, 100, 10, fill="Red")
+        self.id = self.canvas.create_rectangle(0, 0, 100, 10, fill="Red")
         self.canvas.move(self.id, startingposX, startingposY)
     
     def update(self, newhealth):
