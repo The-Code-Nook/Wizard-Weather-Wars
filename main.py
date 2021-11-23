@@ -429,7 +429,6 @@ class Environment:
         self.canvas = canvas
 
     def drawHot(self, sprite1):
-        print("hello")
         self.img = Image.open(sprite1).resize((100, 100), Image.ANTIALIAS)
         self.file = ImageTk.PhotoImage(self.img)
         self.id = self.canvas.create_image((100, 100), image=self.file)
