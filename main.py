@@ -536,6 +536,8 @@ class Player:
             self.velocity_x = 0
             self.canvas.move(self.id, 1271-coords[2], 0)
         
+        self.weapon.draw(canvas.coords(self.id))
+        
         # Check if we're attacked
         if self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]) and self.enemy.weapon.attacking:
             self.damage(self.enemy.weapon.damage)
@@ -621,14 +623,14 @@ def startgame():
     ground = Tile(canvas, 0, 720, 1280, 680, "green")
     p1weapon = Weapon(canvas, "assets\\images\\firesword.png", 15)
     p1healthbar = HealthBar(canvas, 0, 50)
-    player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True)
+    player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right')
 
     env = Environment(canvas)
 
 
     p2healthbar = HealthBar(canvas, 1180, 50)
     p2weapon = Weapon(canvas, "assets\\images\\icesword.png", 15)
-    player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False)
+    player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left')
 
     player1.enemy = player2
     player2.enemy = player1
@@ -646,10 +648,10 @@ def startgame():
             #env.draw()
 
             player1.draw()
-            p1weapon.draw(canvas.coords(player1.id))
+            #p1weapon.draw(canvas.coords(player1.id))
 
             player2.draw()
-            p2weapon.draw(canvas.coords(player2.id))
+            #p2weapon.draw(canvas.coords(player2.id))
 
             tk.update_idletasks()
             tk.update()
