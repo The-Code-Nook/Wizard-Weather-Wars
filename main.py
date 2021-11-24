@@ -252,12 +252,25 @@ class Player:
 
         self.velocity_y += self.acceleration_y
         coords = canvas.coords(self.id)
+
+        # Check if we've hit the ground
         if coords[3] > 680:
             self.velocity_y = 0
             self.canvas.move(self.id, 0, 680-coords[3])
             self.canvas.move(self.sprite, 0, 680-coords[3])
             self.jump_count = 2
             self.player_inertia = 0.8
+        
+        # Check if we're at the left border
+        if coords[0] <= 5:
+            self.velocity_x = 0
+            self.canvas.move(self.id, 5-coords[0], 0)
+            self.canvas.move(self.sprite, 5-coords[0], 0)
+        # Check if we're at the right border
+        if coords[2] >= 1270:
+            self.velocity_x = 0
+            self.canvas.move(self.id, 1270-coords[2], 0)
+            self.canvas.move(self.sprite, 1270-coords[2], 0)
         
         
         self.weapon.draw(canvas.coords(self.id), self.facing)
