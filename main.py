@@ -177,9 +177,9 @@ class Environment:
         self.canvas.delete(self.id)
 
 class Player:
-    def __init__(self, canvas, Up, Left, Right, Attack, color, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name, Power, isHot, facing, weakness, env, sprite, sprite_reverse):
-        self.canvas = canvas
-        self.color = color
+    def __init__(self, canvas: Canvas, Up, Left, Right, Attack, color: str, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name: str, Power, isHot, facing, weakness, env, sprite, sprite_reverse):
+        self.canvas: Canvas = canvas
+        self.color: str = color
         self.Attack = Attack
         self.Up = Up
         self.Left = Left
@@ -199,7 +199,7 @@ class Player:
         self.left_stop = True
         self.right_stop = True
         self.isHot = isHot
-        self.name = name
+        self.name: str = name
         # player inertia is friction
         self.player_inertia = 0.08
         self.deactivated = True
