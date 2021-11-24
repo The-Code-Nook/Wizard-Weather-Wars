@@ -311,6 +311,7 @@ class Player:
 
     def damage(self, damage_amount):
         # Small attack cooldown
+        damage_amount = damage_amount*self.enemy.attack_multiplier
         self.health -= damage_amount
         self.healthbar.update(self.health)
         
@@ -359,10 +360,10 @@ class Player:
             self.weapon.face_right()
 
 
-isdone = False
+exited = False
 def on_quit():
-    global isdone
-    isdone = True
+    global exited
+    exited = True
     tk.destroy()
 
 tk.protocol("WM_DELETE_WINDOW", on_quit)
@@ -382,12 +383,12 @@ def startgame():
     env = Environment(canvas)
 
     ground = Tile(canvas, 0, 720, 1280, 680, "green")
-    p1weapon = Weapon(canvas,"assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png",  15, True)
+    p1weapon = Weapon(canvas,"assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png",  5, True)
     p1healthbar = HealthBar(canvas, 0, 50)
     player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right', "hot", env, "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
 
     p2healthbar = HealthBar(canvas, 1180, 50)
-    p2weapon = Weapon(canvas, "assets\\images\\firesword.png", "assets\\images\\firesword_rotate.png", 15, False)
+    p2weapon = Weapon(canvas, "assets\\images\\firesword.png", "assets\\images\\firesword_rotate.png", 5, False)
     player2 = Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, p2weapon, p2healthbar, "Player 2", "l", False, 'left', "cold", env, "assets\\images\\firewizard.png", "assets\\images\\firewizard_reverse.png")
 
     player1.enemy = player2
@@ -395,7 +396,7 @@ def startgame():
 
     try:
         env.draw()
-        while not isdone:
+        while not isdone and not exited:
 
             player1.draw()
 
