@@ -261,14 +261,14 @@ class Player:
             self.jump_count = 2
             self.player_inertia = 0.8
         
-        if coords[2] < 10:
-            self.velocity_x = 0
-            self.canvas.move(self.id, 10-coords[2], 0)
-            self.canvas.move(self.sprite, 10-coords[2]-50, 0)
-        elif coords[2] > 1271:
-            self.velocity_x = 0
-            self.canvas.move(self.id, 1271-coords[2], 0)
-            self.canvas.move(self.sprite, 1271-coords[2] - 50, 0)
+        # if coords[2] < 10:
+        #     self.velocity_x = 0
+        #     self.canvas.move(self.id, 10-coords[2], 0)
+        #     self.canvas.move(self.sprite, 10-coords[2]-50, 0)
+        # elif coords[2] > 1271:
+        #     self.velocity_x = 0
+        #     self.canvas.move(self.id, 1271-coords[2], 0)
+        #     self.canvas.move(self.sprite, 1271-coords[2] - 50, 0)
         
         self.weapon.draw(canvas.coords(self.id), self.facing)
         
