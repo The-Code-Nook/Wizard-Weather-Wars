@@ -47,7 +47,7 @@ class Tile:
 class HealthBar:
     def __init__(self, canvas, startingposX, startingposY):
         self.canvas = canvas
-        self.fillid = self.canvas.create_rectangle(0, 0, 0, 10, fill="Red")
+        self.fillid = self.canvas.create_rectangle(0, 0, 0, 10, fill="#FF0000")
         self.outline = self.canvas.create_rectangle(0, 0, 100, 10)
         self.startingposX = startingposX
         self.startingposY = startingposY
@@ -143,6 +143,13 @@ class Environment:
         self.delete_countdown = -1
         self.loadingtext1 = None
         self.id = None
+        self.id2 = None
+
+        self.img = Image.open("assets\\images\\Cloud 2.png")
+        self.file = ImageTk.PhotoImage(self.img)
+        self.img2 = Image.open("assets\\images\\Cloud 1.png")
+        self.file2 = ImageTk.PhotoImage(self.img)
+
     
     def draw(self):
         if self.delete_countdown > 0:
@@ -162,12 +169,9 @@ class Environment:
     
     def drawCold(self):
         self.clear()
-        '''self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
-        self.file = ImageTk.PhotoImage(self.img)
-        self.id = self.canvas.create_image((100, 100), image=self.file)
-        self.img = Image.open(sprite2).resize((100, 100), Image.ANTIALIAS)
-        self.file = ImageTk.PhotoImage(self.img)
-        self.id = self.canvas.create_image((100, 100), image=self.file)'''
+        self.id = self.canvas.create_image((250, 200), image=self.file)
+        self.id2 = self.canvas.create_image((900, 150), image=self.file2)
+
         canvas.configure(bg="#d0cccc")
         self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
         self.delete_countdown = 100
@@ -175,6 +179,7 @@ class Environment:
     def clear(self):
         self.canvas.delete(self.loadingtext1)
         self.canvas.delete(self.id)
+        self.canvas.delete(self.id2)
 
 class Player:
     def __init__(self, canvas: Canvas, Up, Left, Right, Attack, color: str, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name: str, Power, isHot, facing, weakness, env, sprite, sprite_reverse):
@@ -382,10 +387,11 @@ def startgame():
 
     env = Environment(canvas)
 
-    ground = Tile(canvas, 0, 720, 1280, 680, "green")
+    ground = Tile(canvas, 0, 720, 1280, 680, "#008000")
+    
     p1weapon = Weapon(canvas,"assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png",  5, True)
     p1healthbar = HealthBar(canvas, 0, 50)
-    player1 = Player(canvas, "w", "a", "d", "v", "Red", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right', "hot", env, "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
+    player1 = Player(canvas, "w", "a", "d", "v", "#FF0000", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right', "hot", env, "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
 
     p2healthbar = HealthBar(canvas, 1180, 50)
     p2weapon = Weapon(canvas, "assets\\images\\firesword.png", "assets\\images\\firesword_rotate.png", 5, False)
