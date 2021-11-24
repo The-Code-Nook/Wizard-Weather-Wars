@@ -399,7 +399,7 @@ def startgame():
 
             tk.update_idletasks()
             tk.update()
-            time.sleep(0.01)
+            time.sleep(0.005)
         else:
             del ground
 
