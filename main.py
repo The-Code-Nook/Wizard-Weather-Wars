@@ -34,8 +34,6 @@ tk.geometry("+0+0")
 # tk.wm_attributes("-topmost", 1)
 # 720x1280 screen
 canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
-canvas.configure(bg="skyblue")
-
 canvas.pack()
 tk.update()
 
@@ -365,6 +363,8 @@ def startgame():
     
     isdone = False
     canvas.delete("all")
+    canvas.configure(bg="skyblue")
+    
     canvas.create_text(600, 50, fill="darkblue", font="Comic_Sans 40 italic bold",
                        text="WIZARD WEATHER WARS")
 
