@@ -1,30 +1,15 @@
 from tkinter import *
 import time
 from PIL import Image, ImageTk
-import random
-import requests
-from bs4 import BeautifulSoup as bs
-from weatherFunction import findWeather
+import math
 
-'''
-weatherInfo = findWeather()
-city, state, temp, timings, sky, otherData = weatherInfo
-tempNum = 0
-if temp[1] == "°":
-    tempNum = int(temp[0])
-if temp[2] == "°":
-    tempNum = int(temp[0:2])
-if temp[3] == "°":
-    tempNum = int(temp[0:3])
+def rotate(x,y,theta):
+    """Rotate some points by theta degrees around the origin.
+    This is just a math thing."""
+    theta_radians = math.radians(theta)
+    return (x*math.cos(theta_radians) - y*math.sin(theta_radians), x*math.sin(theta_radians) + y*math.cos(theta_radians))
 
-if tempNum < 60:
-    environment = "cold"
-elif tempNum > 75:
-    environment = "hot"
-else:
-    environment = "normal"
 
-'''
 tk = Tk()
 tk.title("Wizard Weather Wars")
 tk.iconbitmap("assets\\images\\wizard.ico")
@@ -81,8 +66,13 @@ class Weapon:
 
         self.animation_frames = [self.img]
         rotation = -10
+        # center = [6,73]
         while rotation <= 12:
             self.animation_frames.append(self.animation_frames[-1].rotate(rotation, resample=Image.BICUBIC, expand=True))
+            # We calculate where the new center of the sword should be
+            # We make the y coord negative since if the top left was the origin, it would be in Quadrant IV
+            # center[0],center[1] = rotate(center[0], -center[1], rotation)
+            # center[1] = -center[1]
             rotation += 1
         self.animation_frames = [ImageTk.PhotoImage(frame) for frame in self.animation_frames]
 
@@ -215,6 +205,7 @@ class Player:
         self.env = env
         self.sprint_velocity = 7
         self.jump_height = 12
+        self.dead = False
 
         if facing == "right":
             self.sprite = self.canvas.create_image((startingposX + 10, startingposY + 48), image=self.file)
@@ -313,9 +304,11 @@ class Player:
                 self.velocity_x -= self.player_inertia
                 if self.velocity_x < 0:
                     self.velocity_x = 0
-
+    
     def damage(self, damage_amount):
         # Small attack cooldown
+        if self.dead: return
+
         damage_amount = damage_amount*self.enemy.attack_multiplier
         self.health -= damage_amount
         self.healthbar.update(self.health)
@@ -324,14 +317,12 @@ class Player:
             self.die()
     
     def die(self):
+        
+        self.dead = True
         self.canvas.create_text(600,320,fill=self.enemy.color,font="Times 50 bold",text=f"{self.enemy.name} wins!")
-
-        self.canvas.unbind(f"<KeyPress-{self.Attack}>")
-        self.canvas.unbind(f"<KeyPress-{self.Power}>")
-        btn = Button(tk, text='New Game', width=40, height=5, bd='10', command=startgame)
-        btn.place(x=65, y=100)
         global isdone
         isdone = True
+        tk.after(500,startgame)
     
     def jump(self, button):
         if self.jump_count:
@@ -372,10 +363,8 @@ def on_quit():
     tk.destroy()
 
 tk.protocol("WM_DELETE_WINDOW", on_quit)
-canvas.create_text(600,50,fill="darkblue",font="Comic_Sans 40 italic bold",
-                        text="WIZARD WEATHER WARS")
 
-def startgame():
+def startgame():    
     global env
     
     isdone = False
@@ -388,7 +377,7 @@ def startgame():
     env = Environment(canvas)
 
     ground = Tile(canvas, 0, 720, 1280, 680, "#008000")
-    
+
     p1weapon = Weapon(canvas,"assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png",  5, True)
     p1healthbar = HealthBar(canvas, 0, 50)
     player1 = Player(canvas, "w", "a", "d", "v", "#FF0000", 245, 100, p1weapon, p1healthbar, "Player 1", "b", True, 'right', "hot", env, "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
