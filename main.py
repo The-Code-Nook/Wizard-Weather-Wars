@@ -4,7 +4,7 @@ from PIL import Image, ImageTk, ImageChops
 
 tk = Tk()
 tk.title("Wizard Weather Wars")
-tk.iconbitmap("assets\\images\\wizard.ico")
+tk.iconbitmap("assets/images/wizard.ico")
 tk.resizable(0,0)
 # Place window at topleft of screen
 tk.geometry("+0+0")
@@ -138,9 +138,9 @@ class Environment:
         self.id2 = None
         self.hot = None
 
-        self.img = Image.open("assets\\images\\Cloud 2.png")
+        self.img = Image.open("assets/images/Cloud 2.png")
         self.file = ImageTk.PhotoImage(self.img)
-        self.img2 = Image.open("assets\\images\\Cloud 1.png")
+        self.img2 = Image.open("assets/images/Cloud 1.png")
         self.file2 = ImageTk.PhotoImage(self.img)
     
     def drawHot(self):
@@ -409,8 +409,8 @@ def initialize_game(gamestart=False):
 
     player1 = {
         "healthbar": HealthBar(canvas, 0, 50),
-        "weapon": Weapon(canvas,"assets\\images\\icesword.png", "assets\\images\\icesword_rotate.png",  5, True),
-        "player": Player(canvas, "w", "a", "d", "v", "#FF0000", 245, 100, "Player 1", "b", True, 'right', "hot", env, "assets\\images\\icewizard.png", "assets\\images\\icewizard_reverse.png")
+        "weapon": Weapon(canvas,"assets/images/icesword.png", "assets/images/icesword_rotate.png",  5, True),
+        "player": Player(canvas, "w", "a", "d", "v", "#FF0000", 245, 100, "Player 1", "b", True, 'right', "hot", env, "assets/images/icewizard.png", "assets/images/icewizard_reverse.png")
     }
     player1["healthbar"].update(player1["player"].health)
     player1["player"].healthbar = player1["healthbar"]
@@ -419,8 +419,8 @@ def initialize_game(gamestart=False):
 
     player2 = {
         "healthbar": HealthBar(canvas, 1180, 50),
-        "weapon": Weapon(canvas, "assets\\images\\firesword.png", "assets\\images\\firesword_rotate.png", 5, False),
-        "player": Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, "Player 2", "l", False, 'left', "cold", env, "assets\\images\\firewizard.png", "assets\\images\\firewizard_reverse.png")
+        "weapon": Weapon(canvas, "assets/images/firesword.png", "assets/images/firesword_rotate.png", 5, False),
+        "player": Player(canvas, "Up", "Left", "Right", "k", "Green", 1035, 100, "Player 2", "l", False, 'left', "cold", env, "assets/images/firewizard.png", "assets/images/firewizard_reverse.png")
     }
     player2["healthbar"].update(player2["player"].health)
     player2["player"].healthbar = player2["healthbar"]
