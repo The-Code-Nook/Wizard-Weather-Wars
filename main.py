@@ -1,13 +1,13 @@
 from tkinter import *
 import time
 from PIL import Image, ImageTk
-import math
+# import math
 
-def rotate(x,y,theta):
-    """Rotate some points by theta degrees around the origin.
-    This is just a math thing."""
-    theta_radians = math.radians(theta)
-    return (x*math.cos(theta_radians) - y*math.sin(theta_radians), x*math.sin(theta_radians) + y*math.cos(theta_radians))
+# def rotate(x,y,theta):
+#     """Rotate some points by theta degrees around the origin.
+#     This is just a math thing."""
+#     theta_radians = math.radians(theta)
+#     return (x*math.cos(theta_radians) - y*math.sin(theta_radians), x*math.sin(theta_radians) + y*math.cos(theta_radians))
 
 
 tk = Tk()
@@ -16,7 +16,6 @@ tk.iconbitmap("assets\\images\\wizard.ico")
 tk.resizable(0,0)
 # Place window at topleft of screen
 tk.geometry("+0+0")
-# tk.wm_attributes("-topmost", 1)
 # 720x1280 screen
 canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
 canvas.pack()
@@ -86,9 +85,10 @@ class Weapon:
         self.attacking_frame = 0
     
     def draw(self, playercoords, facing):
+        self.facing = facing
         if self.attacking:
+            self.canvas.delete(self.id)
             if facing:
-                self.canvas.delete(self.id)
                 self.id = self.canvas.create_image((playercoords[2]+10,playercoords[3]-80), image=self.animation_frames[self.attacking_frame])
                 self.attacking_frame += 1
                 if self.attacking_frame >= 23:
@@ -96,7 +96,6 @@ class Weapon:
                     self.attacking = False
         
             else:
-                self.canvas.delete(self.id)
                 self.id = self.canvas.create_image((playercoords[2]-35,playercoords[3]-80), image=self.animation_frames_reverse[self.attacking_frame])
                 self.attacking_frame += 1
                 if self.attacking_frame >= 23:
@@ -111,12 +110,16 @@ class Weapon:
                 self.canvas.move(self.id, playercoords[2] - coords[0]-35, playercoords[3] - coords[1]-80)
         
     def face_left(self):
+        # make sure we're not already facing left
+        if not self.facing: return
         self.attacking_frame = 0
         self.canvas.delete(self.id)
         self.id = self.canvas.create_image((0,0), image=self.file_rotate)
         self.attacking = False
 
     def face_right(self):
+        # make sure we're not already facing right
+        if self.facing: return
         self.attacking_frame = 0
         self.canvas.delete(self.id)
         self.id = self.canvas.create_image((0,0), image=self.file)
@@ -130,41 +133,30 @@ class Weapon:
 class Environment:
     def __init__(self, canvas) -> None:
         self.canvas = canvas
-        self.delete_countdown = -1
         self.loadingtext1 = None
         self.id = None
         self.id2 = None
+        self.hot = None
 
         self.img = Image.open("assets\\images\\Cloud 2.png")
         self.file = ImageTk.PhotoImage(self.img)
         self.img2 = Image.open("assets\\images\\Cloud 1.png")
         self.file2 = ImageTk.PhotoImage(self.img)
-
     
-    def draw(self):
-        if self.delete_countdown > 0:
-            self.delete_countdown -= 1
-        elif self.delete_countdown == 0:
-            self.clear()
-            self.delete_countdown = -1
-
     def drawHot(self):
+        self.hot = True
         self.clear()
-        '''self.img = Image.open(sprite1).resize((100, 100), Image.ANTIALIAS)
-        self.file = ImageTk.PhotoImage(self.img)
-        self.id = self.canvas.create_image((100, 100), image=self.file)'''
         self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now HOT!", font="Comic_Sans 20 italic bold", fill="orange")
-        self.delete_countdown = 100
         canvas.configure(bg="#9acae7")
     
     def drawCold(self):
+        self.hot = False
         self.clear()
         self.id = self.canvas.create_image((250, 200), image=self.file)
         self.id2 = self.canvas.create_image((900, 150), image=self.file2)
 
         canvas.configure(bg="#d0cccc")
         self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
-        self.delete_countdown = 100
     
     def clear(self):
         self.canvas.delete(self.loadingtext1)
@@ -172,7 +164,7 @@ class Environment:
         self.canvas.delete(self.id2)
 
 class Player:
-    def __init__(self, canvas: Canvas, Up, Left, Right, Attack, color: str, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name: str, Power, isHot, facing, weakness, env, sprite, sprite_reverse):
+    def __init__(self, canvas: Canvas, Up, Left, Right, Attack, color: str, startingposX, startingposY, weapon: Weapon, healthbar: HealthBar, name: str, Power, isHot, facing, weakness, env: Environment, sprite, sprite_reverse):
         self.canvas: Canvas = canvas
         self.color: str = color
         self.Attack = Attack
@@ -202,7 +194,7 @@ class Player:
         self.healthbar = healthbar
         self.enemy = None
         self.weakness = weakness
-        self.env = env
+        self.env: Environment = env
         self.sprint_velocity = 7
         self.jump_height = 12
         self.dead = False
@@ -279,10 +271,10 @@ class Player:
             else:
                 self.velocity_x = -20
 
-            if self.weakness == "hot":
+            if self.weakness == "hot" and not self.env.hot:
                 self.env.drawHot()
             
-            elif self.weakness == "cold":
+            elif self.weakness == "cold" and (self.env.hot or self.env.hot == None):
                 self.env.drawCold()
 
             self.sprint_velocity = 4
@@ -291,10 +283,8 @@ class Player:
             self.enemy.jump_height = 12
             self.attack_multiplier = 0.5
             self.enemy.attack_multiplier = 1
-            
-
         
-        # Slowly adding drift so it's more natural
+        # Slowly adding drift so moving is more natural
         if self.deactivated:
             if self.velocity_x < 0:
                 self.velocity_x += self.player_inertia
@@ -317,7 +307,6 @@ class Player:
             self.die()
     
     def die(self):
-        
         self.dead = True
         self.canvas.create_text(600,320,fill=self.enemy.color,font="Times 50 bold",text=f"{self.enemy.name} wins!")
         global isdone
@@ -390,7 +379,6 @@ def startgame():
     player2.enemy = player1
 
     try:
-        env.draw()
         while not isdone and not exited:
 
             player1.draw()
@@ -411,7 +399,7 @@ def startgame():
             del p2healthbar
             del player2
     except KeyboardInterrupt:
-        print('breh just use the x')
+        pass
 
 if __name__ == "__main__":
     startgame()
