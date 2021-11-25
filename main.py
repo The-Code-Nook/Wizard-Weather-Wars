@@ -1,14 +1,6 @@
 from tkinter import *
 import time
-from PIL import Image, ImageTk
-# import math
-
-# def rotate(x,y,theta):
-#     """Rotate some points by theta degrees around the origin.
-#     This is just a math thing."""
-#     theta_radians = math.radians(theta)
-#     return (x*math.cos(theta_radians) - y*math.sin(theta_radians), x*math.sin(theta_radians) + y*math.cos(theta_radians))
-
+from PIL import Image, ImageTk, ImageChops
 
 tk = Tk()
 tk.title("Wizard Weather Wars")
@@ -20,6 +12,17 @@ tk.geometry("+0+0")
 canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
 canvas.pack()
 tk.update()
+
+
+def trim_image(im: Image):
+    """https://stackoverflow.com/questions/10615901/trim-whitespace-using-pil"""
+    bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
+    diff = ImageChops.difference(im, bg)
+    diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+
 
 class Tile:
     def __init__(self, canvas, x1, y1, x2, y2, color):
@@ -64,22 +67,17 @@ class Weapon:
         self.damage = damage
 
         self.animation_frames = [self.img]
-        rotation = -10
-        # center = [6,73]
-        while rotation <= 12:
-            self.animation_frames.append(self.animation_frames[-1].rotate(rotation, resample=Image.BICUBIC, expand=True))
-            # We calculate where the new center of the sword should be
-            # We make the y coord negative since if the top left was the origin, it would be in Quadrant IV
-            # center[0],center[1] = rotate(center[0], -center[1], rotation)
-            # center[1] = -center[1]
-            rotation += 1
+        rotations = [-10]
+        while rotations[-1] <= 12:
+            self.animation_frames.append(trim_image(self.img.rotate(sum(rotations), resample=Image.BICUBIC, expand=True)))
+            rotations.append(rotations[-1]+1)
         self.animation_frames = [ImageTk.PhotoImage(frame) for frame in self.animation_frames]
 
         self.animation_frames_reverse = [self.img_rotate]
-        rotation = 10
-        while rotation >= -12:
-            self.animation_frames_reverse.append(self.animation_frames_reverse[-1].rotate(rotation, resample=Image.BICUBIC, expand=True))
-            rotation -= 1
+        rotations = [10]
+        while rotations[-1] >= -12:
+            self.animation_frames_reverse.append(trim_image(self.img_rotate.rotate(sum(rotations), resample=Image.BICUBIC, expand=True)))
+            rotations.append(rotations[-1]-1)
         self.animation_frames_reverse = [ImageTk.PhotoImage(frame) for frame in self.animation_frames_reverse]
         
         self.attacking_frame = 0
@@ -91,14 +89,13 @@ class Weapon:
             if facing:
                 self.id = self.canvas.create_image((playercoords[2]+10,playercoords[3]-80), image=self.animation_frames[self.attacking_frame])
                 self.attacking_frame += 1
-                if self.attacking_frame >= 23:
+                if self.attacking_frame >= 22:
                     self.attacking_frame = 0
                     self.attacking = False
-        
             else:
                 self.id = self.canvas.create_image((playercoords[2]-35,playercoords[3]-80), image=self.animation_frames_reverse[self.attacking_frame])
                 self.attacking_frame += 1
-                if self.attacking_frame >= 23:
+                if self.attacking_frame >= 22:
                     self.attacking_frame = 0
                     self.attacking = False
 
@@ -380,7 +377,6 @@ def startgame():
 
     try:
         while not isdone and not exited:
-
             player1.draw()
 
             player2.draw()
