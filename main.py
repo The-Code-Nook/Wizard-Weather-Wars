@@ -356,14 +356,12 @@ try:
     while not exited:
         player1["player"].draw()
 
-        tk.update_idletasks()
         tk.update()
 
         if exited: break
 
         player2["player"].draw()
 
-        tk.update_idletasks()
         tk.update()
         # Swords start flickering if you make the delay less than .015 for some reason
         time.sleep(0.005)
