@@ -75,10 +75,10 @@ class Environment:
         self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
     
     def clear(self):
-        self.canvas.configure(bg="skyblue")
         self.canvas.delete(self.loadingtext1)
         self.canvas.delete(self.id)
         self.canvas.delete(self.id2)
+        self.canvas.configure(bg="skyblue")
 
 class Player:
     def __init__(self, canvas: Canvas, Up, Left, Right, Attack, color: str, startingposX, startingposY, name: str, Power, isHot, facing, weakness, env: Environment, sprite, sprite_reverse, weapon: Weapon=None, healthbar: HealthBar=None):
