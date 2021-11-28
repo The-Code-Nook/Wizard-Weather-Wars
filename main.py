@@ -89,13 +89,12 @@ class Player:
         self.Left = Left
         self.Right = Right
         self.Power = Power
-        #self.id is hitbox
-        self.id = self.canvas.create_rectangle(0, 0, 20, 100, outline="")
+        self.hitbox = self.canvas.create_rectangle(0, 0, 20, 100, outline="")
         self.img = Image.open(sprite)
         self.img_reverse = Image.open(sprite_reverse)
         self.file = ImageTk.PhotoImage(self.img)
         self.file_reverse = ImageTk.PhotoImage(self.img_reverse)
-        self.canvas.move(self.id, startingposX, startingposY)
+        self.canvas.move(self.hitbox, startingposX, startingposY)
         self.acceleration_y: float = 0.6
         self.velocity_y = 0
         self.velocity_x = 0
@@ -157,7 +156,7 @@ class Player:
             self.deactivated = True
 
     def move(self,x,y):
-        self.canvas.move(self.id, x, y)
+        self.canvas.move(self.hitbox, x, y)
         self.canvas.move(self.sprite, x, y)
         self.canvas.move(self.nametag, x, y)
 
@@ -165,7 +164,7 @@ class Player:
         self.move(self.velocity_x, self.velocity_y)
 
         self.velocity_y += self.acceleration_y
-        coords = canvas.coords(self.id)
+        coords = canvas.coords(self.hitbox)
 
         # Check if we've hit the ground
         if coords[3] > 680:
@@ -183,7 +182,7 @@ class Player:
             self.velocity_x = 0
             self.move(1270-coords[2], 0)        
         
-        self.weapon.draw(canvas.coords(self.id), self.facing)
+        self.weapon.draw(canvas.coords(self.hitbox), self.facing)
         
         # Check if we're attacked
         if self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]) and self.enemy.weapon.attacking:
@@ -270,17 +269,17 @@ class Player:
             self.weapon.face_right()
     
     def delete(self):
-        self.canvas.delete(self.id)
+        self.canvas.delete(self.hitbox)
         self.canvas.delete(self.sprite)
         self.canvas.delete(self.nametag)
     
     def toggle_hitboxes(self):
         if self.hitboxes_enabled:
             self.hitboxes_enabled = False
-            self.canvas.itemconfigure(self.id, outline="")
+            self.canvas.itemconfigure(self.hitbox, outline="")
         else:
             self.hitboxes_enabled = True
-            self.canvas.itemconfigure(self.id, outline="red")
+            self.canvas.itemconfigure(self.hitbox, outline="red")
 
 
 exited = False
