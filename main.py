@@ -231,6 +231,8 @@ class Player:
         global wintext
 
         self.dead = True
+        self.canvas.unbind_all(f"<KeyRelease-{self.Attack}>")
+        self.canvas.unbind_all(f"<KeyRelease-{self.enemy.Attack}>")
         wintext = self.canvas.create_text(600,320,fill=self.enemy.color,font="Times 50 bold",text=f"{self.enemy.name} wins!")
         # Initialize players back to their starting positions
         tk.after(500, initialize_game)
@@ -355,15 +357,11 @@ initialize_game(gamestart=True)
 try:
     while not exited:
         player1["player"].draw()
-
         tk.update()
-
         if exited: break
 
         player2["player"].draw()
-
         tk.update()
-        # Swords start flickering if you make the delay less than .015 for some reason
         time.sleep(0.005)
 except KeyboardInterrupt:
     pass
