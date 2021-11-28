@@ -95,10 +95,10 @@ class Sword(Weapon):
 
 
 class FireSword(Sword):
-    def __init__(self, canvas, facing, damage=5) -> None:
+    def __init__(self, canvas, facing, damage=15) -> None:
         super().__init__(canvas, f"{WORKINGDIR}/assets/images/firesword.png", f"{WORKINGDIR}/assets/images/firesword_rotate.png", damage, facing)
 
 
 class IceSword(Sword):
-    def __init__(self, canvas, facing, damage=5) -> None:
+    def __init__(self, canvas, facing, damage=15) -> None:
         super().__init__(canvas, f"{WORKINGDIR}/assets/images/icesword.png", f"{WORKINGDIR}/assets/images/icesword_rotate.png", damage, facing)

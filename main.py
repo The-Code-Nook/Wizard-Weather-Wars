@@ -116,6 +116,7 @@ class Player:
         self.dead = False
         self.nametag = self.canvas.create_text(startingposX+8, startingposY-25, font="Times 10", text=self.name)
         self.hitboxes_enabled = False
+        self.attacked = False
 
         if facing == "right":
             self.sprite = self.canvas.create_image((startingposX + 10, startingposY + 48), image=self.file)
@@ -129,7 +130,6 @@ class Player:
         self.health = 100
         # This will range from 0.1 to 1.9 depending on the weather
         self.attack_multiplier = 1
-        self.defense_multiplier = 1
 
         if self.weapon is not None:
             self.set_bindings()
@@ -185,7 +185,8 @@ class Player:
         self.weapon.draw(canvas.coords(self.hitbox), self.facing)
         
         # Check if we're attacked
-        if self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3]) and self.enemy.weapon.attacking:
+        if (not self.attacked) and (self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3])) and (self.enemy.weapon.attacking):
+            self.attacked = True
             self.damage(self.enemy.weapon.damage)
             if self.enemy.facing:
                 self.velocity_x = 20
@@ -195,7 +196,7 @@ class Player:
             if self.weakness == "hot" and not self.env.hot:
                 self.env.drawHot()
             
-            elif self.weakness == "cold" and (self.env.hot or self.env.hot == None):
+            elif self.weakness == "cold" and (self.env.hot or self.env.hot is None):
                 self.env.drawCold()
 
             self.sprint_velocity = 4
@@ -204,6 +205,8 @@ class Player:
             self.enemy.jump_height = 12
             self.attack_multiplier = 0.75
             self.enemy.attack_multiplier = 1
+        elif self.attacked and not self.enemy.weapon.attacking:
+            self.attacked = False
         
         # Slowly adding drift so moving is more natural
         if self.deactivated:
