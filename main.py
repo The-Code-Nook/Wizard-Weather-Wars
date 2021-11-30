@@ -187,6 +187,10 @@ class Player:
     def draw(self):
         if self.dead or self.enemy.dead: return
         
+        # Tell tkinter to redraw the character again later after FRAME_DELAY ms
+        # Calling at the beginning might be problematic if the function takes longer than FRAME_DELAY ms to execute, but for me while testing it has never exceeded 6 ms (the game will change though, so use time.perf_counter to test this function and print if you encounter weirdness)
+        tk.after(FRAME_DELAY, self.draw)
+        
         self.move(self.velocity_x, self.velocity_y)
 
         self.velocity_y += self.acceleration_y
@@ -245,8 +249,6 @@ class Player:
                 if self.velocity_x < 0:
                     self.velocity_x = 0
         
-        tk.after(FRAME_DELAY, self.draw)
-    
     def damage(self, damage_amount):
         if self.dead: return
 
