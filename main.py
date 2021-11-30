@@ -3,6 +3,7 @@ from tkinter import *
 from pathlib import Path
 from PIL import Image, ImageTk
 from weapons import *
+from mainmenu import MainMenu
 
 WORKINGDIR = Path(__file__).parent.resolve()
 
@@ -10,13 +11,8 @@ tk = Tk()
 tk.title("Wizard Weather Wars")
 tk.iconbitmap(f"{WORKINGDIR}/assets/images/wizard.ico")
 tk.resizable(0,0)
-# Place window at topleft of screen
-tk.geometry("+0+0")
-# 720x1280 screen
-canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
-canvas.pack()
-tk.update()
-
+tk.grid_propagate(False)
+tk.geometry("1280x720+0+0")
 
 class Tile:
     def __init__(self, canvas, x1, y1, x2, y2, color):
@@ -62,8 +58,8 @@ class Environment:
     def drawHot(self):
         self.clear()
         self.hot = True
-        self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now HOT!", font="Comic_Sans 20 italic bold", fill="orange")
-        canvas.configure(bg="#9acae7")
+        self.loadingtext1 = self.canvas.create_text(600, 200, text="Environment is now HOT!", font="Comic_Sans 20 italic bold", fill="orange")
+        self.canvas.configure(bg="#9acae7")
     
     def drawCold(self):
         self.clear()
@@ -71,8 +67,8 @@ class Environment:
         self.id = self.canvas.create_image((250, 200), image=self.file)
         self.id2 = self.canvas.create_image((900, 150), image=self.file2)
 
-        canvas.configure(bg="#d0cccc")
-        self.loadingtext1 = canvas.create_text(600, 200, text="Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
+        self.canvas.configure(bg="#d0cccc")
+        self.loadingtext1 = self.canvas.create_text(600, 200, text="Environment is now COLD!", font="Comic_Sans 20 italic bold", fill="blue")
     
     def clear(self):
         self.canvas.delete(self.loadingtext1)
@@ -164,7 +160,7 @@ class Player:
         self.move(self.velocity_x, self.velocity_y)
 
         self.velocity_y += self.acceleration_y
-        coords = canvas.coords(self.hitbox)
+        coords = self.canvas.coords(self.hitbox)
 
         # Check if we've hit the ground
         if coords[3] > 680:
@@ -182,7 +178,7 @@ class Player:
             self.velocity_x = 0
             self.move(1270-coords[2], 0)        
         
-        self.weapon.draw(canvas.coords(self.hitbox), self.facing)
+        self.weapon.draw(self.canvas.coords(self.hitbox), self.facing)
         
         # Check if we're attacked
         if (not self.attacked) and (self.enemy.weapon.id in self.canvas.find_overlapping(coords[0], coords[1], coords[2], coords[3])) and (self.enemy.weapon.attacking):
@@ -230,15 +226,13 @@ class Player:
             self.die()
     
     def die(self):
-        global wintext
 
         self.dead = True
         self.canvas.unbind_all(f"<KeyRelease-{self.Attack}>")
         self.canvas.unbind_all(f"<KeyRelease-{self.enemy.Attack}>")
         wintext = self.canvas.create_text(600,320,fill=self.enemy.color,font="Times 50 bold",text=f"{self.enemy.name} wins!")
-        # Initialize players back to their starting positions
-        tk.after(500, initialize_game)
-        env.clear()
+        tk.after(500, lambda: initialize_local2p_game(self.canvas, self.env, wintext))
+        self.env.clear()
 
     def jump(self, button):
         if self.jump_count:
@@ -293,17 +287,12 @@ def on_quit():
 
 tk.protocol("WM_DELETE_WINDOW", on_quit)
 
-wintext = None
-
-def initialize_game(gamestart=False):
+def initialize_local2p_game(canvas, env=None, wintext=None, gamestart=False):
     global player1
     global player2
-    global env
-    global canvas
-    global wintext
-    canvas.delete(wintext)
-    
+
     if not gamestart:
+        canvas.delete(wintext)
         player1["healthbar"].delete()
         player1["weapon"].delete()
         player1["player"].delete()
@@ -311,6 +300,10 @@ def initialize_game(gamestart=False):
         player2["healthbar"].delete()
         player2["weapon"].delete()
         player2["player"].delete()
+    else:
+        canvas.create_text(600, 50, fill="darkblue", font="Comic_Sans 40 italic bold", text="WIZARD WEATHER WARS")
+        ground = Tile(canvas, 0, 720, 1280, 680, "#008000")
+
 
     env = Environment(canvas)
     env.clear()
@@ -337,32 +330,36 @@ def initialize_game(gamestart=False):
 
     player1["player"].enemy = player2["player"]
     player2["player"].enemy = player1["player"]
+    
+    canvas.bind_all("<KeyPress-F3>", lambda button, player1=player1, player2=player2: showdebug(player1, player2))
 
-def showdebug(button):
+
+def showdebug(*players):
     # This simply exists because I was noticing weird behavior at the map border, so this was simply to help me by toggling hitboxes
-    global player1
-    global player2
+    for player in players: player["player"].toggle_hitboxes()
 
-    player1["player"].toggle_hitboxes()
-    player2["player"].toggle_hitboxes()
+def start_game(local: bool, playercount: int):
+    global game_started
+    game_started = True
+    canvas = Canvas(tk, width=1280, height=720, bd=0, highlightthickness=0)
+    canvas.configure(bg="skyblue")
+    canvas.pack()
+    tk.update()
 
-canvas.bind_all("<KeyPress-F3>", showdebug)
+    if local == True and playercount == 2:
+        initialize_local2p_game(canvas, gamestart=True)
 
-canvas.configure(bg="skyblue")
-
-canvas.create_text(600, 50, fill="darkblue", font="Comic_Sans 40 italic bold", text="WIZARD WEATHER WARS")
-
-ground = Tile(canvas, 0, 720, 1280, 680, "#008000")
-
-initialize_game(gamestart=True)
+game_started = False
+menu = MainMenu(tk, lambda: start_game(True, 2))
 
 try:
     while not exited:
-        player1["player"].draw()
-        tk.update()
-        if exited: break
+        if game_started:
+            player1["player"].draw()
+            tk.update()
+            if exited: break
 
-        player2["player"].draw()
+            player2["player"].draw()
         tk.update()
         time.sleep(0.005)
 except KeyboardInterrupt:

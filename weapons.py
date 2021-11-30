@@ -32,13 +32,16 @@ class Weapon:
         if self.attacking:
             self.canvas.delete(self.id)
             if facing:
-                self.id = self.canvas.create_image((playercoords[2]+10,playercoords[3]-80), image=self.animation_frames[self.attacking_frame])
+                currim: ImageTk.PhotoImage = self.animation_frames[self.attacking_frame]
+                # We get these numbers because -35 on the x, then currim.width() - normalwidth (at the moment, normal width is 21, just view the image for how many pixels) to account for the image's width changing while rotating. Same idea for height
+                self.id = self.canvas.create_image((playercoords[2]+currim.width()-41,playercoords[3]-8-currim.height()), image=currim)
                 self.attacking_frame += 1
                 if self.attacking_frame >= len(self.animation_frames):
                     self.attacking_frame = 0
                     self.attacking = False
             else:
-                self.id = self.canvas.create_image((playercoords[2]-35,playercoords[3]-80), image=self.animation_frames_reverse[self.attacking_frame])
+                currim = self.animation_frames_reverse[self.attacking_frame]
+                self.id = self.canvas.create_image((playercoords[2]+14-currim.width(),playercoords[3]-8-currim.height()), image=currim)
                 self.attacking_frame += 1
                 if self.attacking_frame >= len(self.animation_frames_reverse):
                     self.attacking_frame = 0
