@@ -182,6 +182,8 @@ class Player:
         self.canvas.move(self.nametag, x, y)
 
     def draw(self):
+        if self.dead or self.enemy.dead: return
+        
         self.move(self.velocity_x, self.velocity_y)
 
         self.velocity_y += self.acceleration_y
@@ -239,6 +241,8 @@ class Player:
                 self.velocity_x -= self.player_inertia
                 if self.velocity_x < 0:
                     self.velocity_x = 0
+        
+        tk.after(10, self.draw)
     
     def damage(self, damage_amount):
         if self.dead: return
@@ -251,7 +255,6 @@ class Player:
             self.die()
     
     def die(self):
-
         self.dead = True
         self.canvas.unbind_all(f"<KeyRelease-{self.Attack}>")
         self.canvas.unbind_all(f"<KeyRelease-{self.enemy.Attack}>")
@@ -304,14 +307,6 @@ class Player:
             self.canvas.itemconfigure(self.hitbox, outline="red")
 
 
-exited = False
-def on_quit():
-    global exited
-    exited = True
-    tk.destroy()
-
-tk.protocol("WM_DELETE_WINDOW", on_quit)
-
 def initialize_local2p_game(canvas, env=None, wintext=None, gamestart=False):
     global player1
     global player2
@@ -358,6 +353,9 @@ def initialize_local2p_game(canvas, env=None, wintext=None, gamestart=False):
     
     canvas.bind_all("<KeyPress-F3>", lambda button, player1=player1, player2=player2: showdebug(player1, player2))
 
+    player1["player"].draw()
+    player2["player"].draw()
+
 
 def showdebug(*players):
     # This simply exists because I was noticing weird behavior at the map border, so this was simply to help me by toggling hitboxes
@@ -377,15 +375,4 @@ def start_game(local: bool, playercount: int):
 game_started = False
 menu = MainMenu(tk, lambda: start_game(True, 2))
 
-try:
-    while not exited:
-        if game_started:
-            player1["player"].draw()
-            tk.update()
-            if exited: break
-
-            player2["player"].draw()
-        tk.update()
-        time.sleep(0.005)
-except KeyboardInterrupt:
-    pass
+tk.mainloop()
