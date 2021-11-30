@@ -5,7 +5,10 @@ from PIL import Image, ImageTk
 from weapons import *
 from mainmenu import MainMenu
 
+# Root directory of project
 WORKINGDIR = Path(__file__).parent.resolve()
+# Delay between frames in ms
+FRAME_DELAY = 10
 
 tk = Tk()
 tk.title("Wizard Weather Wars")
@@ -242,7 +245,7 @@ class Player:
                 if self.velocity_x < 0:
                     self.velocity_x = 0
         
-        tk.after(10, self.draw)
+        tk.after(FRAME_DELAY, self.draw)
     
     def damage(self, damage_amount):
         if self.dead: return
