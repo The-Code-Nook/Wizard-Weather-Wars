@@ -85,6 +85,7 @@ class Player:
         self.Left = Left
         self.Right = Right
         self.Power = Power
+
         self.hitbox = self.canvas.create_rectangle(0, 0, 20, 100, outline="")
         self.img = Image.open(sprite)
         self.img_reverse = Image.open(sprite_reverse)
@@ -139,6 +140,30 @@ class Player:
         self.canvas.bind_all(f"<KeyRelease-{self.Left}>", self.left_stopper)
         self.canvas.bind_all(f"<KeyRelease-{self.Right}>", self.right_stopper)
         self.canvas.bind_all(f"<KeyRelease-{self.Attack}>", self.weapon.attack)
+        try:
+            self.canvas.bind_all(f"<KeyPress-{self.Up.swapcase()}>", self.jump)
+        except:
+            pass
+        try:
+            self.canvas.bind_all(f"<KeyPress-{self.Left.swapcase()}>", self.left)
+        except:
+            pass
+        try:
+            self.canvas.bind_all(f"<KeyPress-{self.Right.swapcase()}>", self.right)
+        except:
+            pass
+        try:
+            self.canvas.bind_all(f"<KeyRelease-{self.Left.swapcase()}>", self.left_stopper)
+        except:
+            pass
+        try:
+            self.canvas.bind_all(f"<KeyRelease-{self.Right.swapcase()}>", self.right_stopper)
+        except:
+            pass
+        try:
+            self.canvas.bind_all(f"<KeyRelease-{self.Attack.swapcase()}>", self.weapon.attack)
+        except:
+            pass
         #self.canvas.bind_all(f"<KeyRelease-{self.Power}>", self.powerUp)
     
     def left_stopper(self, button):
